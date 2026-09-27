@@ -1,7 +1,17 @@
+// ---- Event: welches Poster wird gebaut? ----
+// Kommt als ?event=<id> aus der URL (siehe index.html), id schlägt in
+// EVENTS (events.js) nach. Ohne oder mit unbekannter id: erstes Event
+// aus der Liste als Fallback, damit die Seite nie leer/kaputt aussieht.
+const selectedEventId = new URLSearchParams(location.search).get("event");
+const CURRENT_EVENT =
+  (typeof getEventById === "function" && getEventById(selectedEventId)) ||
+  (typeof EVENTS !== "undefined" ? EVENTS[0] : null);
+
 // ---- Feste Inhalte (hier später einfach anpassen) ----
-const TITLE_TEXT = "AUGSBURG";
-const DATE_LINES = ["September", "19th & 20th"];
-const DOMAIN_TEXT = "www.dav-kletterzentrum-augsburg.de";
+const TITLE_TEXT = CURRENT_EVENT ? CURRENT_EVENT.cityTitle : "WORLD CLIMBING";
+const DATE_LINES = CURRENT_EVENT ? CURRENT_EVENT.dateLines : ["", ""];
+const ACCENTS_FILE = `assets/images/accents-${CURRENT_EVENT ? CURRENT_EVENT.discipline : "lead"}.png`;
+const DOMAIN_TEXT = "worldclimbing.com";
 const TEXT_COLOR = "#03111F";
 
 const CANVAS_W = 1080;
@@ -26,83 +36,6 @@ const FONT_FAMILY = "WorldClimbingBold";
 // Schrift mit vollständigem Zeichensatz nutzen, statt browserseitigem
 // Fallback (der uneinheitliche Strichstärken verursacht).
 const DATE_FONT_FAMILY = "AntarcticanMono";
-
-// ---- Sprache (nur Seitentexte - das Bild selbst bleibt unverändert) ----
-const TRANSLATIONS = {
-  de: {
-    title: "EYCH Augsburg – Story Generator",
-    intro:
-      "Lade dein Foto hoch, positioniere es und lade dein persönliches Story-Bild herunter. Dein Foto wird ausschließlich in deinem Browser verarbeitet und nirgendwo hochgeladen oder gespeichert.",
-    stageHint: "Foto hochladen, um zu starten",
-    zoom: "Zoom",
-    dragHint:
-      "Tipp: Foto mit der Maus ziehen (am Handy: mit zwei Fingern), um den Ausschnitt anzupassen. Mit einem Finger kannst du die Seite ganz normal weiterscrollen.",
-    photoLabel: "Dein Foto",
-    textLabel: "Dein Text",
-    textPlaceholder: "z. B. dein Name",
-    downloadBtn: "Bild herunterladen",
-    privacyNote:
-      "🔒 Alles läuft lokal in deinem Browser ab. Es werden keine Bilder oder Namen an einen Server gesendet oder gespeichert.",
-    appBrowserNote:
-      "⚠️ Der Download funktioniert im Instagram-Browser leider nicht. Tippe oben rechts auf ⋯ und wähle „Im Browser öffnen\".",
-  },
-  en: {
-    title: "EYCH Augsburg – Story Generator",
-    intro:
-      "Upload your photo, position it, and download your personal story image. Your photo is processed entirely in your browser and never uploaded or stored anywhere.",
-    stageHint: "Upload a photo to get started",
-    zoom: "Zoom",
-    dragHint:
-      "Tip: drag the photo with your mouse (on mobile: with two fingers) to adjust the crop. With one finger you can keep scrolling the page normally.",
-    photoLabel: "Your photo",
-    textLabel: "Your text",
-    textPlaceholder: "e.g. your name",
-    downloadBtn: "Download image",
-    privacyNote:
-      "🔒 Everything runs locally in your browser. No images or names are ever sent to or stored on a server.",
-    appBrowserNote:
-      "⚠️ Downloading doesn't work in Instagram's in-app browser. Tap ⋯ in the top right and choose \"Open in Browser\".",
-  },
-};
-
-const LANG_STORAGE_KEY = "eych-lang";
-
-function applyLanguage(lang) {
-  const t = TRANSLATIONS[lang] || TRANSLATIONS.de;
-  document.documentElement.lang = lang;
-  document.querySelectorAll("[data-i18n]").forEach((el) => {
-    const key = el.getAttribute("data-i18n");
-    if (t[key]) el.textContent = t[key];
-  });
-  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-placeholder");
-    if (t[key]) el.placeholder = t[key];
-  });
-  document.querySelectorAll("[data-lang-btn]").forEach((btn) => {
-    btn.setAttribute("aria-pressed", String(btn.dataset.langBtn === lang));
-  });
-  try {
-    localStorage.setItem(LANG_STORAGE_KEY, lang);
-  } catch (e) {
-    // localStorage kann in manchen Kontexten (z. B. privates Fenster mit
-    // blockiertem Speicher) fehlschlagen - dann merken wir uns die Wahl
-    // eben nur für diese Sitzung.
-  }
-}
-
-function initLanguage() {
-  let saved = null;
-  try {
-    saved = localStorage.getItem(LANG_STORAGE_KEY);
-  } catch (e) {
-    // s.o.
-  }
-  applyLanguage(saved === "en" ? "en" : "de");
-
-  document.querySelectorAll("[data-lang-btn]").forEach((btn) => {
-    btn.addEventListener("click", () => applyLanguage(btn.dataset.langBtn));
-  });
-}
 
 // ---- Setup ----
 const canvas = document.getElementById("previewCanvas");
@@ -183,7 +116,17 @@ function drawTexts() {
   ctx.fillStyle = TEXT_COLOR;
   ctx.textBaseline = "alphabetic";
 
-  ctx.font = `${TITLE_POS.size}px "${FONT_FAMILY}"`;
+  // Manche Stadtnamen ("SALT LAKE CITY") sind deutlich länger als
+  // "AUGSBURG" - Schriftgröße bei Bedarf verkleinern, damit nichts über
+  // den rechten Rand hinausläuft.
+  const maxTitleWidth = CANVAS_W - TITLE_POS.x - 40;
+  let titleSize = TITLE_POS.size;
+  ctx.font = `${titleSize}px "${FONT_FAMILY}"`;
+  const titleWidth = ctx.measureText(TITLE_TEXT).width;
+  if (titleWidth > maxTitleWidth) {
+    titleSize = Math.floor(titleSize * (maxTitleWidth / titleWidth));
+    ctx.font = `${titleSize}px "${FONT_FAMILY}"`;
+  }
   ctx.fillText(TITLE_TEXT, TITLE_POS.x, TITLE_POS.y);
 
   ctx.font = `${DATE_POS.size}px "${DATE_FONT_FAMILY}"`;
@@ -352,7 +295,8 @@ downloadBtn.addEventListener("click", () => {
   canvas.toBlob((blob) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    const namePart = nameInput.value.trim().replace(/\s+/g, "_") || "EYCH_Augsburg";
+    const fallbackName = CURRENT_EVENT ? CURRENT_EVENT.cityTitle.replace(/\s+/g, "_") : "World_Climbing";
+    const namePart = nameInput.value.trim().replace(/\s+/g, "_") || fallbackName;
     a.href = url;
     a.download = `${namePart}_Story.png`;
     document.body.appendChild(a);
@@ -368,8 +312,8 @@ async function init() {
     loadImage("assets/images/bg-base.png"),
     loadImage("assets/images/photo-mask.png"),
     loadImage("assets/images/chalk-texture.png"),
-    loadImage("assets/images/accents-lead.png"),
-    loadImage("assets/images/logo.png"),
+    loadImage(ACCENTS_FILE),
+    loadImage("assets/images/logo-generic.png"),
   ]);
   assets.bg = bg;
   assets.mask = mask;
@@ -395,5 +339,11 @@ if (isInAppBrowser()) {
   appBrowserNote.hidden = false;
 }
 
-initLanguage();
+if (CURRENT_EVENT) {
+  const pageTitleEl = document.getElementById("pageTitle");
+  const label = `${CURRENT_EVENT.city} World Cup – ${CURRENT_EVENT.discipline[0].toUpperCase()}${CURRENT_EVENT.discipline.slice(1)}`;
+  if (pageTitleEl) pageTitleEl.textContent = label;
+  document.title = `${label} Story Generator`;
+}
+
 init();

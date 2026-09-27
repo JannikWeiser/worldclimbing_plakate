@@ -22,6 +22,12 @@
 
 * { box-sizing: border-box; }
 
+html {
+  /* Mobile-first: keine horizontalen Ueberraschungen, egal was ein
+     Kind-Element (z. B. das Canvas mit fixer Breite/Hoehe) anstellt. */
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   background: var(--bg);
@@ -32,39 +38,61 @@ body {
 .page {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 32px 20px 64px;
+  padding: 20px 16px 40px;
   position: relative;
+}
+
+@media (min-width: 700px) {
+  .page {
+    padding: 32px 20px 64px;
+  }
 }
 
 .back-link {
   display: inline-block;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   font-size: 14px;
   color: #666;
 }
 
 .page__header h1 {
-  font-size: 28px;
+  font-size: 22px;
   margin: 0 0 8px;
 }
 
+@media (min-width: 700px) {
+  .page__header h1 {
+    font-size: 28px;
+  }
+}
+
 .page__header p {
-  margin: 0 0 32px;
+  margin: 0 0 20px;
   color: #555;
   max-width: 640px;
   line-height: 1.5;
+  font-size: 14px;
 }
 
+@media (min-width: 700px) {
+  .page__header p {
+    margin: 0 0 32px;
+    font-size: 16px;
+  }
+}
+
+/* Mobile-first: eine Spalte per Default, ab genug Platz nebeneinander. */
 .layout {
   display: grid;
-  grid-template-columns: minmax(260px, 400px) 1fr;
-  gap: 32px;
+  grid-template-columns: 1fr;
+  gap: 20px;
   align-items: start;
 }
 
-@media (max-width: 720px) {
+@media (min-width: 720px) {
   .layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(260px, 400px) 1fr;
+    gap: 32px;
   }
 }
 
@@ -72,6 +100,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  /* Ohne das hier zwingt das Canvas (feste 1080x1920-Attribute) die
+     Grid-Spalte auf seine Intrinsic-Breite, was auf dem Handy zu
+     horizontalem Overflow fuehrt. */
+  min-width: 0;
 }
 
 .stage {
@@ -137,11 +169,19 @@ body {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 24px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   height: fit-content;
+  min-width: 0;
+}
+
+@media (min-width: 700px) {
+  .form {
+    padding: 24px;
+    gap: 20px;
+  }
 }
 
 .field {
@@ -241,54 +281,138 @@ body {
 }
 
 /* Event picker (home page) */
+/* Mobile-first: eine schmale, horizontal scrollbare Leiste mit nur
+   Nummer + Titel, damit die eigentliche Event-Liste sofort sichtbar
+   ist statt hinter drei grossen Karten zu verschwinden. Ab Tablet-
+   Breite wird daraus das ausfuehrliche 3-Spalten-Layout mit Text. */
 .howto {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 0 16px;
+  padding-bottom: 2px;
 }
 
-@media (max-width: 720px) {
+@media (min-width: 700px) {
   .howto {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+    overflow: visible;
   }
 }
 
 .howto__step {
+  flex: none;
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
+  gap: 8px;
+  align-items: center;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 999px;
+  padding: 8px 14px 8px 8px;
+  white-space: nowrap;
+}
+
+@media (min-width: 700px) {
+  .howto__step {
+    flex: initial;
+    align-items: flex-start;
+    border-radius: 12px;
+    padding: 16px;
+    white-space: normal;
+  }
 }
 
 .howto__num {
   flex: none;
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: var(--ink);
   color: #fff;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+@media (min-width: 700px) {
+  .howto__num {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+  }
+}
+
 .howto__step p {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.5;
-  color: #444;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+@media (min-width: 700px) {
+  .howto__step p {
+    font-size: 14px;
+    color: #444;
+    font-weight: 400;
+  }
+}
+
+.howto__desc {
+  display: none;
+}
+
+@media (min-width: 700px) {
+  .howto__desc {
+    display: block;
+    margin-top: 2px;
+  }
+}
+
+/* Disziplin-Filter: auf dem Handy die schnellste Art, aus 18 Events
+   die eigenen 3-4 zu finden statt alles durchzuscrollen. */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filter-chip {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.filter-chip.is-active {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
 }
 
 .event-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 560px) {
+  .event-list {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
 }
 
 .event-card {
@@ -308,6 +432,10 @@ body {
   border-color: var(--ink);
 }
 
+.event-card[hidden] {
+  display: none;
+}
+
 .event-card__dot {
   flex: none;
   width: 14px;
@@ -323,6 +451,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .event-card__city {

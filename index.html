@@ -16,17 +16,24 @@
     <section class="howto">
       <div class="howto__step">
         <span class="howto__num">1</span>
-        <p><strong>Pick your event</strong><br>Choose the World Cup you're at from the list below.</p>
+        <p><strong>Pick your event</strong><span class="howto__desc">Choose the World Cup you're at from the list below.</span></p>
       </div>
       <div class="howto__step">
         <span class="howto__num">2</span>
-        <p><strong>Add your photo</strong><br>Upload a photo, position and zoom it to fit.</p>
+        <p><strong>Add your photo</strong><span class="howto__desc">Upload a photo, position and zoom it to fit.</span></p>
       </div>
       <div class="howto__step">
         <span class="howto__num">3</span>
-        <p><strong>Download & share</strong><br>Save your poster and post it anywhere you like.</p>
+        <p><strong>Download & share</strong><span class="howto__desc">Save your poster and post it anywhere you like.</span></p>
       </div>
     </section>
+
+    <div class="filter-bar" id="filterBar" role="group" aria-label="Filter by discipline">
+      <button type="button" class="filter-chip is-active" data-filter="all">All</button>
+      <button type="button" class="filter-chip" data-filter="boulder">Boulder</button>
+      <button type="button" class="filter-chip" data-filter="lead">Lead</button>
+      <button type="button" class="filter-chip" data-filter="speed">Speed</button>
+    </div>
 
     <section class="event-list" id="eventList" aria-label="Choose your event"></section>
 
@@ -46,6 +53,7 @@
       const a = document.createElement("a");
       a.className = "event-card";
       a.href = `generator.html?event=${encodeURIComponent(event.id)}`;
+      a.dataset.discipline = event.discipline;
 
       a.innerHTML = `
         <span class="event-card__dot event-card__dot--${event.discipline}"></span>
@@ -55,6 +63,20 @@
         </span>
       `;
       list.appendChild(a);
+    });
+
+    const filterBar = document.getElementById("filterBar");
+    filterBar.addEventListener("click", (evt) => {
+      const btn = evt.target.closest(".filter-chip");
+      if (!btn) return;
+
+      filterBar.querySelectorAll(".filter-chip").forEach((c) => c.classList.remove("is-active"));
+      btn.classList.add("is-active");
+
+      const filter = btn.dataset.filter;
+      list.querySelectorAll(".event-card").forEach((card) => {
+        card.hidden = filter !== "all" && card.dataset.discipline !== filter;
+      });
     });
   </script>
 </body>

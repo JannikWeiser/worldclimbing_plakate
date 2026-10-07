@@ -52,6 +52,8 @@ const nameInput = document.getElementById("nameInput");
 const zoomRange = document.getElementById("zoomRange");
 const photoControls = document.getElementById("photoControls");
 const downloadBtn = document.getElementById("downloadBtn");
+const shareBtn = document.getElementById("shareBtn");
+const shareStatus = document.getElementById("shareStatus");
 const appBrowserNote = document.getElementById("appBrowserNote");
 
 // Instagrams (und aehnlicher In-App-Browser) blockiert echte Datei-Downloads
@@ -286,6 +288,7 @@ photoInput.addEventListener("change", async () => {
   stageHint.hidden = true;
   photoControls.hidden = false;
   downloadBtn.disabled = false;
+  shareBtn.disabled = false;
 
   render();
 });
@@ -303,6 +306,50 @@ downloadBtn.addEventListener("click", () => {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+  }, "image/png");
+});
+
+// ---- Share (Web Share API) ----
+// Zusaetzlicher Button, der den Download-Button NICHT ersetzt. Nur sichtbar,
+// wenn der Browser das Teilen von Dateien wirklich unterstuetzt. Kein Overlay,
+// kein fixed-Element: Bei Fehlern erscheint nur eine Textzeile.
+function canShareFiles() {
+  if (!navigator.share || !navigator.canShare) return false;
+  try {
+    const probe = new File([new Blob([""], { type: "image/png" })], "probe.png", { type: "image/png" });
+    return navigator.canShare({ files: [probe] });
+  } catch (e) {
+    return false;
+  }
+}
+
+function showShareStatus(msg) {
+  shareStatus.textContent = msg;
+  shareStatus.hidden = !msg;
+}
+
+if (canShareFiles()) {
+  shareBtn.hidden = false;
+}
+
+shareBtn.addEventListener("click", () => {
+  showShareStatus("");
+  render();
+  canvas.toBlob(async (blob) => {
+    if (!blob) {
+      showShareStatus("Could not create the image. Please try again.");
+      return;
+    }
+    const fallbackName = CURRENT_EVENT ? CURRENT_EVENT.cityTitle.replace(/\s+/g, "_") : "World_Climbing";
+    const namePart = nameInput.value.trim().replace(/\s+/g, "_") || fallbackName;
+    const file = new File([blob], `${namePart}_Story.png`, { type: "image/png" });
+    try {
+      await navigator.share({ files: [file] });
+    } catch (e) {
+      // AbortError = Nutzer hat das Teilen-Menue selbst geschlossen: kein Fehler.
+      if (e && e.name === "AbortError") return;
+      showShareStatus("Sharing isn't available here. Please use \"Download image\" or open this page in your browser.");
+    }
   }, "image/png");
 });
 

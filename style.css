@@ -211,6 +211,12 @@ body {
   cursor: pointer;
 }
 
+.button--secondary {
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+}
+
 .button:disabled {
   background: #ccc;
   cursor: not-allowed;
@@ -231,6 +237,13 @@ body {
   border: 1px solid #fed7aa;
   border-radius: 8px;
   padding: 10px 12px;
+  line-height: 1.4;
+}
+
+.share-status {
+  margin: 0;
+  font-size: 13px;
+  color: #92400e;
   line-height: 1.4;
 }
 

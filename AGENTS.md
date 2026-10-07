@@ -207,8 +207,18 @@ needs revisiting:
    the user to tap ⋯ → "Open in Browser". No special download-button
    behavior, no overlay, nothing that can get stuck. This is a real
    limitation of Instagram's WebView, not something fixable from inside
-   the page — don't spend more time trying to route around it without
-   new information (e.g. if Instagram changes their WebView policy).
+   the page.
+4. **Added later at the user's explicit request (2026-10-07): a separate
+   "Share image" button** (`#shareBtn`, `#shareStatus` in `generator.html`;
+   "Share (Web Share API)" section in `app.js`). Differences from attempt
+   2: it is an *additional* button, the Download button and the
+   Instagram warning are untouched; it is only un-hidden if
+   `navigator.canShare({files})` works; there is no inline-image/overlay
+   fallback — on a non-`AbortError` failure it only shows one text line
+   (`#shareStatus`). Tested with a stubbed `navigator.share` (success,
+   abort, failure, mobile layout) but **not yet verified in real
+   Instagram** — if the user reports it fails there, don't add overlays
+   again; just remove the button or keep it as a harmless extra.
 
 ## Known gaps / open TODOs
 

@@ -74,11 +74,15 @@ const MAX_ROWS = 10;
 const FONT_FAMILY = "WorldClimbingBold"; // nur Buchstaben, keine Ziffern/Satzzeichen
 const DATA_FONT_FAMILY = "AntarcticanMono"; // vollstaendiger Zeichensatz
 
-// Startklasse (Elite = leer) + Geschlecht; "Custom..." erlaubt freie Klassen
-// (z. B. "U13", "Para", "Masters"), damit wirklich jede Klasse moeglich ist.
-const CUSTOM_CLASS = "__custom";
-const CLASSES = ["", "Juniors", "Youth A", "Youth B", "Youth C", CUSTOM_CLASS];
-const GENDERS = ["", "Men", "Women", "Men & Women"];
+// Startklassen (Vorgabe des Nutzers): Men, Women sowie U17/U19/U21 jeweils
+// fuer Men, Women und Women and Men. Der Text wird 1:1 aufs Plakat gesetzt.
+const START_CLASSES = [
+  { label: "Elite", options: ["Men", "Women"] },
+  ...["U17", "U19", "U21"].map((u) => ({
+    label: u,
+    options: [`${u} Men`, `${u} Women`, `${u} Women and Men`],
+  })),
+];
 
 // ---- Setup ----
 const canvas = document.getElementById("previewCanvas");
@@ -147,34 +151,24 @@ function addRow(values) {
   session.dataset.key = "session";
   session.value = v.session || "";
 
-  const mkSelect = (key, list, labelFor, value) => {
-    const sel = document.createElement("select");
-    sel.dataset.key = key;
-    list.forEach((c) => {
+  const cat = document.createElement("select");
+  cat.dataset.key = "category";
+  const none = document.createElement("option");
+  none.value = "";
+  none.textContent = "–";
+  cat.appendChild(none);
+  START_CLASSES.forEach((g) => {
+    const og = document.createElement("optgroup");
+    og.label = g.label;
+    g.options.forEach((name) => {
       const o = document.createElement("option");
-      o.value = c;
-      o.textContent = labelFor(c);
-      sel.appendChild(o);
+      o.value = name;
+      o.textContent = name;
+      og.appendChild(o);
     });
-    sel.value = value;
-    return sel;
-  };
-
-  const cls = mkSelect("cls", CLASSES, (c) => (c === CUSTOM_CLASS ? "Custom…" : c || "–"), v.cls || "");
-  const gender = mkSelect("gender", GENDERS, (c) => c || "–", v.gender || "");
-
-  const clsCustom = document.createElement("input");
-  clsCustom.type = "text";
-  clsCustom.maxLength = 16;
-  clsCustom.placeholder = "e.g. U13";
-  clsCustom.dataset.key = "clsCustom";
-  clsCustom.value = v.clsCustom || "";
-  const customWrap = mk("tt-field--custom", "Custom class", clsCustom);
-  const syncCustom = () => {
-    customWrap.hidden = cls.value !== CUSTOM_CLASS;
-  };
-  cls.addEventListener("change", syncCustom);
-  syncCustom();
+    cat.appendChild(og);
+  });
+  cat.value = v.category || "";
 
   const remove = document.createElement("button");
   remove.type = "button";
@@ -189,9 +183,7 @@ function addRow(values) {
     mk("tt-field--day", "Day", day),
     mk("tt-field--time", "Time", time),
     mk("tt-field--session", "Session", session),
-    mk("tt-field--cls", "Class", cls),
-    mk("tt-field--gender", "Gender", gender),
-    customWrap,
+    mk("tt-field--cat", "Start class", cat),
     remove
   );
   rowsEl.appendChild(row);
@@ -216,11 +208,7 @@ function getEntries() {
   const entries = [];
   rowsEl.querySelectorAll(".tt-row").forEach((row) => {
     const get = (k) => row.querySelector(`[data-key="${k}"]`).value.trim();
-    const cls = get("cls");
-    const clsText = cls === CUSTOM_CLASS ? get("clsCustom") : cls;
-    // z. B. "Youth A / Women"; nur eines von beiden geht auch
-    const category = [clsText, get("gender")].filter(Boolean).join(" / ");
-    const e = { day: get("day"), time: get("time"), session: get("session"), category };
+    const e = { day: get("day"), time: get("time"), session: get("session"), category: get("category") };
     if (e.time || e.session) entries.push(e);
   });
   return entries;

@@ -74,7 +74,11 @@ const MAX_ROWS = 10;
 const FONT_FAMILY = "WorldClimbingBold"; // nur Buchstaben, keine Ziffern/Satzzeichen
 const DATA_FONT_FAMILY = "AntarcticanMono"; // vollstaendiger Zeichensatz
 
-const CATEGORIES = ["", "Men", "Women", "Men & Women"];
+// Startklasse (Elite = leer) + Geschlecht; "Custom..." erlaubt freie Klassen
+// (z. B. "U13", "Para", "Masters"), damit wirklich jede Klasse moeglich ist.
+const CUSTOM_CLASS = "__custom";
+const CLASSES = ["", "Juniors", "Youth A", "Youth B", "Youth C", CUSTOM_CLASS];
+const GENDERS = ["", "Men", "Women", "Men & Women"];
 
 // ---- Setup ----
 const canvas = document.getElementById("previewCanvas");
@@ -143,15 +147,34 @@ function addRow(values) {
   session.dataset.key = "session";
   session.value = v.session || "";
 
-  const cat = document.createElement("select");
-  cat.dataset.key = "category";
-  CATEGORIES.forEach((c) => {
-    const o = document.createElement("option");
-    o.value = c;
-    o.textContent = c || "–";
-    cat.appendChild(o);
-  });
-  cat.value = v.category || "";
+  const mkSelect = (key, list, labelFor, value) => {
+    const sel = document.createElement("select");
+    sel.dataset.key = key;
+    list.forEach((c) => {
+      const o = document.createElement("option");
+      o.value = c;
+      o.textContent = labelFor(c);
+      sel.appendChild(o);
+    });
+    sel.value = value;
+    return sel;
+  };
+
+  const cls = mkSelect("cls", CLASSES, (c) => (c === CUSTOM_CLASS ? "Custom…" : c || "–"), v.cls || "");
+  const gender = mkSelect("gender", GENDERS, (c) => c || "–", v.gender || "");
+
+  const clsCustom = document.createElement("input");
+  clsCustom.type = "text";
+  clsCustom.maxLength = 16;
+  clsCustom.placeholder = "e.g. U13";
+  clsCustom.dataset.key = "clsCustom";
+  clsCustom.value = v.clsCustom || "";
+  const customWrap = mk("tt-field--custom", "Custom class", clsCustom);
+  const syncCustom = () => {
+    customWrap.hidden = cls.value !== CUSTOM_CLASS;
+  };
+  cls.addEventListener("change", syncCustom);
+  syncCustom();
 
   const remove = document.createElement("button");
   remove.type = "button";
@@ -166,7 +189,9 @@ function addRow(values) {
     mk("tt-field--day", "Day", day),
     mk("tt-field--time", "Time", time),
     mk("tt-field--session", "Session", session),
-    mk("tt-field--cat", "Category", cat),
+    mk("tt-field--cls", "Class", cls),
+    mk("tt-field--gender", "Gender", gender),
+    customWrap,
     remove
   );
   rowsEl.appendChild(row);
@@ -191,7 +216,11 @@ function getEntries() {
   const entries = [];
   rowsEl.querySelectorAll(".tt-row").forEach((row) => {
     const get = (k) => row.querySelector(`[data-key="${k}"]`).value.trim();
-    const e = { day: get("day"), time: get("time"), session: get("session"), category: get("category") };
+    const cls = get("cls");
+    const clsText = cls === CUSTOM_CLASS ? get("clsCustom") : cls;
+    // z. B. "Youth A / Women"; nur eines von beiden geht auch
+    const category = [clsText, get("gender")].filter(Boolean).join(" / ");
+    const e = { day: get("day"), time: get("time"), session: get("session"), category };
     if (e.time || e.session) entries.push(e);
   });
   return entries;

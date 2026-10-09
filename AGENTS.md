@@ -321,8 +321,7 @@ canvas draws with `setTransform(k,…)` so preview (k=2) and export share
 - No photo. Draws: `bg-base` → discipline `accents` → logo → title →
   "TIMETABLE" heading → rows → date → optional "Your text" → rotated domain.
   The chalk/blob layer is intentionally skipped (belongs to the photo).
-- Rows are entered by the user (Day, Time, Session, Category select:
-  –/Men/Women/Men & Women). No timetable data lives in `events.js` -
+- Rows are entered by the user (Day, Time, Session, Class select (–/Juniors/Youth A/B/C/Custom… with free text field) + Gender select (–/Men/Women/Men & Women); shown joined as e.g. "YOUTH A / WOMEN" - added 2026-10-09 so every start class (incl. youth) can be chosen; no age ranges are printed because I wasn't sure of the exact IFSC/DAV definitions). No timetable data lives in `events.js` -
   user chose manual entry (no invented data). Max 10 rows (`MAX_ROWS`),
   at least one row always remains; rows with neither time nor session are
   ignored; the Download/Share buttons are disabled until one valid row exists.

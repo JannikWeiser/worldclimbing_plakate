@@ -85,16 +85,6 @@ const MAX_ROWS = 10;
 const FONT_FAMILY = "WorldClimbingBold"; // nur Buchstaben, keine Ziffern/Satzzeichen
 const DATA_FONT_FAMILY = "AntarcticanMono"; // vollstaendiger Zeichensatz
 
-// Startklassen (Vorgabe des Nutzers): Men, Women sowie U17/U19/U21 jeweils
-// fuer Men, Women und Women and Men. Der Text wird 1:1 aufs Plakat gesetzt.
-const START_CLASSES = [
-  { label: "Elite", options: ["Men", "Women"] },
-  ...["U17", "U19", "U21"].map((u) => ({
-    label: u,
-    options: [`${u} Men`, `${u} Women`, `${u} Women and Men`],
-  })),
-];
-
 // ---- Setup ----
 const canvas = document.getElementById("previewCanvas");
 const ctx = canvas.getContext("2d");
@@ -171,23 +161,12 @@ function addRow(values) {
   session.dataset.key = "session";
   session.value = v.session || "";
 
-  const cat = document.createElement("select");
+  // Freitext (z. B. "U17 Women", "Group 1"); wird 1:1 in Grossbuchstaben aufs Plakat gesetzt
+  const cat = document.createElement("input");
+  cat.type = "text";
+  cat.maxLength = 28;
+  cat.placeholder = "e.g. U17 Women or Group 1";
   cat.dataset.key = "category";
-  const none = document.createElement("option");
-  none.value = "";
-  none.textContent = "–";
-  cat.appendChild(none);
-  START_CLASSES.forEach((g) => {
-    const og = document.createElement("optgroup");
-    og.label = g.label;
-    g.options.forEach((name) => {
-      const o = document.createElement("option");
-      o.value = name;
-      o.textContent = name;
-      og.appendChild(o);
-    });
-    cat.appendChild(og);
-  });
   cat.value = v.category || "";
 
   const remove = document.createElement("button");

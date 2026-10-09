@@ -332,7 +332,7 @@ canvas draws with `setTransform(k,…)` so preview (k=2) and export share
   `photo.narrowRight` (`rightEdgeAt()`), the time column is capped at 40 %
   of that width and all times shrink together (`timeSize`). Without photo
   nothing changes. Download/Share don't depend on the photo.
-- Rows are entered by the user (Day, Time, Session, Start class select, exactly the list the user specified on 2026-10-09: –, Men, Women, and for each of U17 / U19 / U21: "<U> Men", "<U> Women", "<U> Women and Men" (`START_CLASSES` in `timetable.js`; the chosen text is printed 1:1 in capitals). An earlier version had Juniors/Youth A-C + custom class + separate gender select - replaced because the user gave the real class list). No timetable data lives in `events.js` -
+- Rows are entered by the user (Day, Time, Session, Start class as **free text** (max 28 chars, e.g. "U17 Women", "Group 1"; printed 1:1 in capitals under the session). History: first a select (Men/Women/U17-U21 × Men/Women/Women and Men, per the user's list), changed on 2026-10-09 to free text at the user's request to keep the form simple and allow things like "Group 1"). No timetable data lives in `events.js` -
   user chose manual entry (no invented data). Max 10 rows (`MAX_ROWS`),
   at least one row always remains; rows with neither time nor session are
   ignored; the Download/Share buttons are disabled until one valid row exists.

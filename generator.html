@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="page">
-    <a class="back-link" href="index.html">← All events</a>
+    <a class="back-link" id="backLink" href="index.html">← All events</a>
 
     <header class="page__header">
       <h1 id="pageTitle">Story Generator</h1>
@@ -59,5 +59,16 @@
 
   <script src="events.js"></script>
   <script src="app.js"></script>
+  <script>
+    // Zurueck fuehrt zur Formatauswahl des gewaehlten Events.
+    (function () {
+      const id = new URLSearchParams(location.search).get("event");
+      if (id && typeof getEventById === "function" && getEventById(id)) {
+        const back = document.getElementById("backLink");
+        back.href = "event.html?event=" + encodeURIComponent(id);
+        back.textContent = "← Back to event";
+      }
+    })();
+  </script>
 </body>
 </html>

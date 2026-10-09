@@ -52,7 +52,7 @@
     EVENTS.forEach((event) => {
       const a = document.createElement("a");
       a.className = "event-card";
-      a.href = `generator.html?event=${encodeURIComponent(event.id)}`;
+      a.href = `event.html?event=${encodeURIComponent(event.id)}`;
       a.dataset.discipline = event.discipline;
 
       a.innerHTML = `

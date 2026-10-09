@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story Timetable – World Climbing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <a class="back-link" id="backLink" href="index.html">← All events</a>
+
+    <header class="page__header">
+      <h1 id="pageTitle">Story Timetable</h1>
+      <p>Enter the schedule, check the preview, and download your timetable story image. Everything is processed entirely in your browser and never uploaded or stored anywhere.</p>
+    </header>
+
+    <main class="layout">
+      <section class="editor">
+        <div class="stage" id="stage">
+          <canvas id="previewCanvas" width="1080" height="1920"></canvas>
+          <div class="stage__hint" id="stageHint">Add at least one schedule entry to get started</div>
+        </div>
+      </section>
+
+      <section class="form">
+        <div class="tt-rows" id="rows"></div>
+        <button type="button" id="addRowBtn" class="button button--secondary">+ Add entry</button>
+        <p class="hint" id="rowsHint">Up to 10 entries. Entries with the same day are grouped under one heading.</p>
+
+        <label class="field">
+          <span>Your text</span>
+          <input type="text" id="nameInput" maxlength="40" placeholder="e.g. your name">
+        </label>
+
+        <button id="downloadBtn" class="button" disabled>Download image</button>
+        <button id="shareBtn" class="button button--secondary" disabled hidden>Share image</button>
+        <p class="share-status" id="shareStatus" hidden></p>
+        <p class="app-browser-note" id="appBrowserNote" hidden>⚠️ Downloading doesn't work in Instagram's in-app browser. Tap ⋯ in the top right and choose "Open in Browser".</p>
+        <p class="privacy-note">🔒 Everything runs locally in your browser. No images or texts are ever sent to or stored on a server.</p>
+      </section>
+    </main>
+
+    <footer class="page__footer">
+      <a href="impressum.html">Impressum</a>
+      <span aria-hidden="true">·</span>
+      <a href="datenschutz.html">Datenschutz</a>
+    </footer>
+  </div>
+
+  <script src="events.js"></script>
+  <script src="timetable.js"></script>
+</body>
+</html>

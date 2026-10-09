@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Choose a format – World Climbing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <a class="back-link" href="index.html">← All events</a>
+
+    <header class="page__header">
+      <h1 id="eventTitle">Choose a format</h1>
+      <p id="eventMeta">What would you like to create?</p>
+    </header>
+
+    <section class="format-list" id="formatList" aria-label="Choose what to create"></section>
+
+    <footer class="page__footer">
+      <a href="impressum.html">Impressum</a>
+      <span aria-hidden="true">·</span>
+      <a href="datenschutz.html">Datenschutz</a>
+    </footer>
+  </div>
+
+  <script src="events.js"></script>
+  <script>
+    const DISCIPLINE_LABEL = { boulder: "Boulder", lead: "Lead", speed: "Speed" };
+
+    // Ohne oder mit unbekannter id zurueck zur Eventliste, statt ein
+    // falsches Event zu zeigen.
+    const eventId = new URLSearchParams(location.search).get("event");
+    const selected = getEventById(eventId);
+    if (!selected) {
+      location.replace("index.html");
+    } else {
+      const label = `${selected.city} World Cup – ${DISCIPLINE_LABEL[selected.discipline]}`;
+      document.title = `${label} – Choose a format`;
+      document.getElementById("eventTitle").textContent = label;
+      document.getElementById("eventMeta").textContent =
+        `${selected.city}, ${selected.country} · ${selected.dateLines[0]} ${selected.dateLines[1]} – what would you like to create?`;
+
+      const q = `?event=${encodeURIComponent(selected.id)}`;
+      // href = null -> noch nicht verfuegbar (wartet auf die Post-Vorlage).
+      const FORMATS = [
+        { name: "Story", desc: "Your photo on a 9:16 story poster", shape: "story", href: `generator.html${q}` },
+        { name: "Post", desc: "Your photo on a feed post", shape: "post", href: null },
+        { name: "Story Timetable", desc: "Schedule as a 9:16 story", shape: "story-table", href: `timetable.html${q}` },
+        { name: "Post Timetable", desc: "Schedule as a feed post", shape: "post-table", href: null },
+      ];
+
+      const list = document.getElementById("formatList");
+      FORMATS.forEach((f) => {
+        const el = document.createElement(f.href ? "a" : "div");
+        el.className = `format-card format-card--${selected.discipline}`;
+        if (f.href) {
+          el.href = f.href;
+        } else {
+          el.classList.add("is-disabled");
+          el.setAttribute("aria-disabled", "true");
+        }
+
+        const shape = document.createElement("span");
+        shape.className = `format-card__shape format-card__shape--${f.shape}`;
+        shape.setAttribute("aria-hidden", "true");
+
+        const info = document.createElement("span");
+        info.className = "format-card__info";
+        const name = document.createElement("span");
+        name.className = "format-card__name";
+        name.textContent = f.name;
+        const desc = document.createElement("span");
+        desc.className = "format-card__desc";
+        desc.textContent = f.desc;
+        info.append(name, desc);
+
+        el.append(shape, info);
+        if (!f.href) {
+          const badge = document.createElement("span");
+          badge.className = "format-card__badge";
+          badge.textContent = "Coming soon";
+          el.append(badge);
+        }
+        list.appendChild(el);
+      });
+    }
+  </script>
+</body>
+</html>

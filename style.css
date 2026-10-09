@@ -128,6 +128,10 @@ body {
   display: block;
 }
 
+.stage__hint[hidden] {
+  display: none;
+}
+
 .stage__hint {
   position: absolute;
   inset: 0;
@@ -475,4 +479,168 @@ body {
 .event-card__meta {
   font-size: 13px;
   color: #777;
+}
+
+/* Event sub page: format cards (Story / Post / Timetables) */
+.format-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 560px) {
+  .format-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+.format-card {
+  --accent: #12777a;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--accent);
+  border-radius: 12px;
+  padding: 16px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color 0.15s ease;
+}
+
+.format-card--boulder { --accent: #e8a020; }
+.format-card--lead { --accent: #12777a; }
+.format-card--speed { --accent: #e8134b; }
+
+a.format-card:hover {
+  border-color: var(--ink);
+  border-left-color: var(--accent);
+}
+
+.format-card.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.format-card__shape {
+  flex: none;
+  height: 64px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.format-card__shape--story,
+.format-card__shape--story-table { aspect-ratio: 9 / 16; height: 76px; }
+.format-card__shape--post,
+.format-card__shape--post-table { aspect-ratio: 4 / 5; height: 64px; }
+
+.format-card__shape--story,
+.format-card__shape--post {
+  background: radial-gradient(circle at 70% 70%, var(--accent) 0 38%, #fff 40%);
+}
+
+.format-card__shape--story-table,
+.format-card__shape--post-table {
+  background: repeating-linear-gradient(
+    to bottom,
+    #fff 0 6px,
+    var(--accent) 6px 9px
+  );
+}
+
+.format-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.format-card__name {
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.format-card__desc {
+  font-size: 13px;
+  color: #777;
+}
+
+.format-card__badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 999px;
+  padding: 3px 8px;
+}
+
+/* Timetable form rows (mobile-first: one column; two columns when wide) */
+.tt-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tt-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fafafc;
+}
+
+.tt-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 0;
+}
+
+.tt-field--day,
+.tt-field--session {
+  grid-column: 1 / -1;
+}
+
+.tt-field input,
+.tt-field select {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  min-width: 0;
+  width: 100%;
+}
+
+.tt-remove {
+  grid-column: 1 / -1;
+  font: inherit;
+  font-size: 13px;
+  background: none;
+  border: none;
+  color: #a33;
+  text-align: right;
+  padding: 2px 0 0;
+  cursor: pointer;
+}
+
+.tt-remove[hidden] {
+  display: none;
+}
+
+.button[hidden] {
+  display: none;
 }

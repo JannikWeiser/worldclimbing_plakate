@@ -220,6 +220,54 @@ needs revisiting:
    Instagram** — if the user reports it fails there, don't add overlays
    again; just remove the button or keep it as a harmless extra.
 
+## Navigation flow and formats (added 2026-10-09)
+
+`index.html` (event list) → `event.html?event=<id>` (format picker, 4 cards)
+→ one of:
+
+| Card | Page | Status |
+|------|------|--------|
+| Story | `generator.html?event=<id>` (`app.js`, unchanged logic) | live |
+| Story Timetable | `timetable.html?event=<id>` (`timetable.js`) | live |
+| Post | – | **"Coming soon"** – needs a post-sized PSD from the user |
+| Post Timetable | – | **"Coming soon"** – same reason |
+
+- `event.html` holds a `FORMATS` array; a card with `href: null` renders as
+  a disabled div with a "Coming soon" badge. To enable Post, add the page
+  and set the `href`. Unknown/missing `?event=` redirects to `index.html`.
+- `generator.html`'s back-link now points to `event.html?event=<id>` (inline
+  script at the bottom of the file); `app.js` was not touched.
+- **Post format is undecided**: user said they will supply a PSD. Don't
+  guess dimensions (1080x1350 vs 1080x1080) - wait for the file, probe it
+  as described in "Asset pipeline", then build `post` / `post-timetable`.
+  `timetable.js` currently hardcodes the story canvas (1080x1920); for the
+  post variant either parametrise it or copy it.
+
+### Story Timetable (`timetable.js`)
+
+- No photo. Draws: `bg-base` → discipline `accents` → logo → title →
+  "TIMETABLE" heading → rows → date → optional "Your text" → rotated domain.
+  The chalk/blob layer is intentionally skipped (belongs to the photo).
+- Rows are entered by the user (Day, Time, Session, Category select:
+  –/Men/Women/Men & Women). No timetable data lives in `events.js` -
+  user chose manual entry (no invented data). Max 10 rows (`MAX_ROWS`),
+  at least one row always remains; rows with neither time nor session are
+  ignored; the Download/Share buttons are disabled until one valid row exists.
+- Consecutive rows with the same day (case-insensitive) share one day
+  heading. No sorting - order = input order.
+- Fonts: `WorldClimbingBold` only has letters + space (no digits, hyphen,
+  &, comma) so only "TIMETABLE"/title/name/domain use it; all data text
+  uses `AntarcticanMono`. Don't draw user data in the bold font.
+- Layout area `TT` (y 630-1490). If content is taller it is scaled down
+  uniformly (`s`), so nothing can overlap the date. Long text is shrunk
+  to fit (`drawFitted`, floor 40 %); days/time columns are truncated with "...".
+- Download/Share code is a deliberate copy of `app.js` (same behaviour,
+  file name `<name|CITY>_Timetable_Story.png`) so that `app.js` stays
+  untouched. Instagram warning note is also repeated.
+- `style.css` got `.stage__hint[hidden]{display:none}`: previously the
+  `display:flex` rule overrode the `hidden` attribute and the placeholder
+  text stayed visible on top of the poster.
+
 ## Known gaps / open TODOs
 
 - **Impressum/Datenschutz are unchanged from the EYCH Augsburg project**

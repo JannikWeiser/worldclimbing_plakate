@@ -31,18 +31,20 @@ const FORMATS = {
     domain: { x: 44, yBottom: 1420, size: 26 },
     tt: { x: 100, right: 1020, headingY: 570, headingSize: 64, top: 630, bottom: 1490 },
   },
+  // Series-Design (Series_Social_Media_template_3-4.psd, 1080x1350 = 4:5).
+  // Gross-Headline unten, Datum rechtsbuendig rechts, Zeitplan oben links.
   post: {
     label: "Post",
     w: 1080,
-    h: 1440,
-    accentsPrefix: "accents-post",
-    bg: "assets/images/bg-post.png",
-    logoBox: { right: 1043, top: 38, maxW: 300, maxH: 185 },
-    title: { x: 40, y: 330, size: 110 },
-    date: { x: 40, y: 1215, size: 56, lineHeight: 68 },
-    name: { x: 40, y: 1385, size: 56 },
-    domain: { x: 44, yBottom: 1130, size: 26 },
-    tt: { x: 100, right: 1020, headingY: 430, headingSize: 56, top: 480, bottom: 1170 },
+    h: 1350,
+    accentsPrefix: "accent-series-post",
+    bg: "assets/images/bg-series-post.png",
+    logoBox: { right: 1043, top: 29, maxW: 300, maxH: 185 },
+    title: { centerX: 540, y: 1189, size: 244, maxW: 1026 },
+    date: { right: 1043, y: 903, size: 56, lineHeight: 62, maxW: 330 },
+    name: { x: 40, y: 1285, size: 56, maxW: 520 },
+    domain: { x: 40, y: 1332, size: 26, rotate: false },
+    tt: { x: 60, right: 1020, headingY: 135, headingSize: 64, top: 235, bottom: 1000, rightLow: { y: 830, x: 710 } },
   },
 };
 const formatParam = new URLSearchParams(location.search).get("format");
@@ -250,7 +252,10 @@ function drawTimetable(entries) {
   const widest = entries.reduce((m, e) => Math.max(m, ctx.measureText(e.time).width), 0);
   const timeColW = Math.min(widest, 410 * s);
   const sessionX = TT.x + (timeColW > 0 ? timeColW + 40 * s : 0);
-  const sessionMaxW = TT.right - sessionX;
+
+  // Rechter Rand je Hoehe: Beim Post (Series) stehen unten rechts Datum und
+  // Akzent-Blob - ab TT.rightLow.y rueckt der Zeitplan deshalb nach links.
+  const rightEdgeAt = (yy) => (TT.rightLow && yy >= TT.rightLow.y ? TT.rightLow.x : TT.right);
 
   let y = TT.top;
   ctx.textBaseline = "alphabetic";
@@ -258,13 +263,14 @@ function drawTimetable(entries) {
     if (b.type === "day") {
       ctx.fillStyle = TEXT_COLOR;
       ctx.font = `${44 * s}px "${DATA_FONT_FAMILY}"`;
-      ctx.fillText(fitText(b.text.toUpperCase(), TT.right - TT.x), TT.x, y + 44 * s);
+      ctx.fillText(fitText(b.text.toUpperCase(), rightEdgeAt(y + 44 * s) - TT.x), TT.x, y + 44 * s);
       ctx.fillStyle = ACCENT_COLOR;
       ctx.fillRect(TT.x, y + 60 * s, 90 * s, 7 * s);
       y += DAY_BLOCK_H * s;
       return;
     }
     const e = b.entry;
+    const sessionMaxW = rightEdgeAt(y + 82 * s) - sessionX;
     ctx.fillStyle = TEXT_COLOR;
     if (e.time) {
       drawFitted(e.time, TT.x, y + 48 * s, 52 * s, timeColW);
@@ -302,41 +308,63 @@ function fitText(text, maxW) {
   return t + "...";
 }
 
+// Setzt ctx.font so, dass text in maxW passt (nur verkleinern); ohne maxW unveraendert.
+function fitFont(text, family, size, maxW) {
+  ctx.font = `${size}px "${family}"`;
+  if (!maxW) return size;
+  const w = ctx.measureText(text).width;
+  if (w > maxW) {
+    size = Math.max(10, Math.floor(size * (maxW / w)));
+    ctx.font = `${size}px "${family}"`;
+  }
+  return size;
+}
+
 function drawTexts() {
   ctx.fillStyle = TEXT_COLOR;
   ctx.textBaseline = "alphabetic";
 
-  const maxTitleWidth = CANVAS_W - TITLE_POS.x - 40;
-  let titleSize = TITLE_POS.size;
-  ctx.font = `${titleSize}px "${FONT_FAMILY}"`;
-  const titleWidth = ctx.measureText(TITLE_TEXT).width;
-  if (titleWidth > maxTitleWidth) {
-    titleSize = Math.floor(titleSize * (maxTitleWidth / titleWidth));
-    ctx.font = `${titleSize}px "${FONT_FAMILY}"`;
+  // Titel: Story links oben (x/y), Post (Series) zentrierte Gross-Headline.
+  if (TITLE_POS.centerX !== undefined) {
+    ctx.textAlign = "center";
+    fitFont(TITLE_TEXT, FONT_FAMILY, TITLE_POS.size, TITLE_POS.maxW);
+    ctx.fillText(TITLE_TEXT, TITLE_POS.centerX, TITLE_POS.y);
+  } else {
+    ctx.textAlign = "left";
+    fitFont(TITLE_TEXT, FONT_FAMILY, TITLE_POS.size, CANVAS_W - TITLE_POS.x - 40);
+    ctx.fillText(TITLE_TEXT, TITLE_POS.x, TITLE_POS.y);
   }
-  ctx.fillText(TITLE_TEXT, TITLE_POS.x, TITLE_POS.y);
 
+  ctx.textAlign = "left";
   ctx.font = `${TT.headingSize}px "${FONT_FAMILY}"`;
   ctx.fillText("TIMETABLE", TT.x, TT.headingY);
 
-  ctx.fillStyle = TEXT_COLOR;
-  ctx.font = `${DATE_POS.size}px "${DATA_FONT_FAMILY}"`;
+  // Datum: Story linksbuendig, Post rechtsbuendig (x = DATE_POS.right)
+  const dateRight = DATE_POS.right !== undefined;
+  ctx.textAlign = dateRight ? "right" : "left";
   DATE_LINES.forEach((line, i) => {
-    ctx.fillText(line, DATE_POS.x, DATE_POS.y + i * DATE_POS.lineHeight);
+    fitFont(line, DATA_FONT_FAMILY, DATE_POS.size, DATE_POS.maxW);
+    ctx.fillText(line, dateRight ? DATE_POS.right : DATE_POS.x, DATE_POS.y + i * DATE_POS.lineHeight);
   });
+  ctx.textAlign = "left";
 
   const name = nameInput.value.trim();
   if (name) {
-    ctx.font = `${NAME_POS.size}px "${FONT_FAMILY}"`;
+    fitFont(name, FONT_FAMILY, NAME_POS.size, NAME_POS.maxW);
     ctx.fillText(name, NAME_POS.x, NAME_POS.y);
   }
 
-  ctx.save();
-  ctx.translate(DOMAIN_POS.x, DOMAIN_POS.yBottom);
-  ctx.rotate(-Math.PI / 2);
-  ctx.font = `${DOMAIN_POS.size}px "${FONT_FAMILY}"`;
-  ctx.fillText(DOMAIN_TEXT, 0, 0);
-  ctx.restore();
+  if (DOMAIN_POS.rotate === false) {
+    ctx.font = `${DOMAIN_POS.size}px "${FONT_FAMILY}"`;
+    ctx.fillText(DOMAIN_TEXT, DOMAIN_POS.x, DOMAIN_POS.y);
+  } else {
+    ctx.save();
+    ctx.translate(DOMAIN_POS.x, DOMAIN_POS.yBottom);
+    ctx.rotate(-Math.PI / 2);
+    ctx.font = `${DOMAIN_POS.size}px "${FONT_FAMILY}"`;
+    ctx.fillText(DOMAIN_TEXT, 0, 0);
+    ctx.restore();
+  }
 }
 
 function render() {

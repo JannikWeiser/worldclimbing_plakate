@@ -45,9 +45,10 @@
       // href = null -> Karte ist deaktiviert ("Coming soon").
       const FORMATS = [
         { name: "Story", desc: "Your photo on a 9:16 story poster", shape: "story", href: `generator.html${q}` },
-        { name: "Post", desc: "Your photo on a 3:4 feed post", shape: "post", href: `post.html${q}` },
+        { name: "Post", desc: "Your photo on a 4:5 feed post", shape: "post", href: `post.html${q}` },
         { name: "Story Timetable", desc: "Schedule as a 9:16 story", shape: "story-table", href: `timetable.html${q}&format=story` },
-        { name: "Post Timetable", desc: "Schedule as a 3:4 feed post", shape: "post-table", href: `timetable.html${q}&format=post` },
+        { name: "Post Timetable", desc: "Schedule as a 4:5 feed post", shape: "post-table", href: `timetable.html${q}&format=post` },
+        { name: "Event Poster", desc: "A3 print poster with ticket QR and partner logos", shape: "a3", href: `eventposter.html${q}` },
       ];
 
       const list = document.getElementById("formatList");

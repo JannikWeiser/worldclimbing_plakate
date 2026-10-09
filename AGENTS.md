@@ -228,34 +228,84 @@ needs revisiting:
 | Card | Page | Status |
 |------|------|--------|
 | Story | `generator.html?event=<id>` (`app.js`, unchanged logic) | live |
-| Post | `post.html?event=<id>` (`post.js`) | live (2026-10-09) |
+| Post (Series, 4:5) | `post.html?event=<id>` (`post.js`) | live (2026-10-09) |
 | Story Timetable | `timetable.html?event=<id>&format=story` (`timetable.js`) | live |
-| Post Timetable | `timetable.html?event=<id>&format=post` (`timetable.js`) | live (2026-10-09) |
+| Post Timetable (Series, 4:5) | `timetable.html?event=<id>&format=post` (`timetable.js`) | live (2026-10-09) |
+| Event Poster (A3) | `eventposter.html?event=<id>` (`eventposter.js`) | live (2026-10-09) |
 
 - `event.html` holds a `FORMATS` array; an entry with `href: null` renders
   as a disabled card with a "Coming soon" badge. Unknown/missing `?event=`
   redirects to `index.html`.
 - `generator.html`'s and `post.html`'s back-link point to
   `event.html?event=<id>` (inline script at the bottom of each file).
-- **Post = 1080x1440 (3:4)**, from `Continents_Digital_Banner_template_3-4.psd`
-  (same design family as the story, so same blob/chalk/accents/logo
-  approach). `post.js` is a *copy* of `app.js` with post constants (kept
-  as a copy on purpose so the Story page can't regress). Assets:
-  `bg-post.png`, `photo-mask-post.png`, `chalk-post.png`,
-  `accents-post-{boulder,lead,speed,generic}.png`, exported with the same
-  recipe as the story ones (see "Asset pipeline"). Post positions
-  (from the PSD text layers: title 125px at x40/baseline≈942; date mono
-  65px; logo box right 1043/top 38): `PHOTO_BOX` = alpha bbox of the mask
-  (229,199,851x1241); title (40,942,125); date (40,1065, lh 80); name
-  (40,1260); rotated domain (44, yBottom 820) - placed above the title
-  because the left gutter below it is occupied by date/name. Title
-  overlays the photo blob on purpose (as in the PSD).
-- Other templates the user supplied on 2026-10-09 but that are **not used**
-  (different design family, "World Climbing **Series**"):
-  `Series_Social_Media_template_9-16.psd` (1080x1920),
-  `Series_Social_Media_template_3-4.psd` (1080x1350 despite the name),
-  and `Continents_Event_Poster_26_templ_RGB.ai` (A-format print poster).
-  Ask the user before building on them.
+- **Post = 1080x1350 (4:5, Instagram feed)**, **Series design**, from
+  `Series_Social_Media_template_3-4.psd` (despite its name that file is
+  1080x1350). Decision history: first built from the Continents 3:4 PSD
+  (1080x1440), then replaced on 2026-10-09 at the user's request (they
+  want the Series look for Posts, 4:5). The Continents-3:4 assets are gone
+  from the tree but still in git history (commit `1757c2e`). Layers of the
+  Series PSD (bottom→top): 2 gradient fills (hidden under the white fill -
+  ignore), white fill, `Dots vector`, photo smart object with a *layer
+  mask* (the blob; its composite alpha = mask), `Layer 2` (lilac textured
+  blob bottom-right, the only coloured element), `Text` group
+  (`HEADLINE` 252px WorldClimbingBold centred, baseline y1189;
+  `DATE` 56px mono; `Generic info` 40px GeneralSans-Light), logo.
+  Assets: `bg-series-post.png` (white+dots), `photo-mask-series-post.png`
+  (alpha only), `accent-series-post-{boulder,lead,speed,generic}.png`.
+  **The Series PSD has no discipline colour variants**: the lilac blob is
+  recoloured by script (keep its alpha + texture, map luminance onto the
+  target colour; script lived in the scratchpad, easy to redo: lighter than
+  base → mix towards white, darker → scale). Target colours are the same as
+  the Continents accents: boulder (251,169,3), lead (3,149,165), speed
+  (255,0,73). `post.js` is a *copy* of `app.js` (kept on purpose so the
+  Story page can't regress) with Series constants: no chalk layer, centred
+  headline (`TITLE_POS`), date + country right-aligned at x1043
+  (`DATE_POS`/`INFO_POS`), user text bottom-left (`NAME_POS`), horizontal
+  domain (`DOMAIN_POS`). "GeneralSans" isn't available, the country uses
+  AntarcticanMono.
+- Other templates supplied on 2026-10-09: `Series_Social_Media_template_9-16.psd`
+  (Series story, 1080x1920) is **not used** yet - ask the user before
+  building a Series story.
+
+### Event Poster (`eventposter.html` / `eventposter.js`, 5th card)
+
+A3 print poster, built from `Continents_Event_Poster_26_templ_RGB.ai`
+(Illustrator file with PDF compatibility; internal title says
+"Series_Event_Poster_26"). All geometry is **vector data pulled out of the
+.ai with PyMuPDF** (`page.get_drawings()` has a `layer` key; the file has
+OCG layers PICTURE HERE, Background, Disciplines, Info, Partners,
+Ticketing, Event Logo (REPLACE), Council WCL logo (REPLACE)). `set_layer`
+does NOT affect rendering, so group drawings by `layer` instead.
+Constants in `eventposter.js` are in pt (page 841.89 x 1190.55); the
+canvas draws with `setTransform(k,…)` so preview (k=2) and export share
+`drawPoster()`.
+
+- Blob (photo mask), lilac circle, pin icon: SVG path strings copied from
+  the drawings. Dots: 30x55 grid, pitch 27.43 x 21.99, r 1.9, #e6e6e6.
+- Discipline word (BOULDER/LEAD/SPEED = event discipline, in its colour):
+  WorldClimbingBold 110px (cap height 0.667 em → the template's 73pt letter
+  height), rotated +90°, x1.1, y-12 (the template deliberately bleeds off
+  the top). The template stacks two words; we show only the event's own.
+- Info block (country, description, month, dates) positions come from the
+  PDF text spans. `COUNTRY` ← `event.country`, month/dates ← `dateLines`
+  (dates auto-shrink; template had "00-00"). Body text uses AntarcticanMono
+  (template: GeneralSans Bold, not available).
+- Ticketing: label + text + QR. QR is generated locally with the vendored
+  `vendor/qrcode.min.js` (qrcode-generator 1.4.4, MIT) from the link field;
+  invalid/too long → QR silently omitted.
+- Partner strip (beige, y ≥ 1071.5): three groups with slot lists
+  (`PARTNER_GROUPS` A=15, B=9, C=6 slots; big boxes top row, small boxes
+  bottom row). Only slots with an uploaded logo (and their label/rule) are
+  drawn; extra files are ignored.
+- Logos: user said "WorldClimbing logo for now" → `logo-generic.png` in both
+  logo slots (top right and bottom-left lockup next to the city title).
+  Replace later when real event logos exist (TOP_LOGO / LOCKUP constants).
+- **Export is A3 @ 300 dpi = 3508x4961 (user's choice)**, which exceeds the
+  iOS canvas limit (~16.7 MP). `exportBlob()` therefore tries widths
+  3508 → 2480 → 1754 and verifies each canvas (pixel probe + non-null
+  blob); the info line under the buttons says which size was used. Not
+  tested on a real iPhone.
+- No photo → preview shows the grey blob + hint; download/share disabled.
 
 ### Timetables (`timetable.js`, `?format=story|post`)
 
@@ -276,8 +326,11 @@ needs revisiting:
   `timetable.js` (canvas size, bg, accents prefix, logo/title/date/name/
   domain positions, timetable area `TT`). Canvas size and the stage
   aspect-ratio are set from JS; unknown `format` falls back to story.
-  Post positions for the timetable are my own design (title y330, heading
-  y430, rows y480-1170, date y1215, name y1385), not from a PSD.
+  Post = Series layout: big centred title at the bottom (as the photo post),
+  "TIMETABLE" heading + rows top-left (area y235-1000), date right-aligned
+  at x1043; below y830 the rows are limited to x<710 (`TT.rightLow`) so
+  they don't run into the date / the accent blob. Rows layout itself is my
+  own design, not from a PSD.
 - Layout area `TT` (story: y 630-1490). If content is taller it is scaled down
   uniformly (`s`), so nothing can overlap the date. Long text is shrunk
   to fit (`drawFitted`, floor 40 %); days/time columns are truncated with "...".
@@ -329,7 +382,7 @@ at real mobile width.
 ## Asset pipeline (regenerating from the source PSD)
 
 The `.psd` in this folder (`Continents_Digital_Banner_template_9-16.psd`;
-the post equivalent `..._3-4.psd` lives in the user's Downloads, 1080x1440)
+the Series post/story PSDs and the A3 `.ai` live in the user's Downloads)
 is the design source (Photoshop, ~238MB, git-ignored). If assets ever
 need re-exporting (e.g. a new discipline colour, a template change):
 

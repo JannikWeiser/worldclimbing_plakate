@@ -10,27 +10,27 @@ const CURRENT_EVENT =
 // ---- Feste Inhalte (hier später einfach anpassen) ----
 const TITLE_TEXT = CURRENT_EVENT ? CURRENT_EVENT.cityTitle : "WORLD CLIMBING";
 const DATE_LINES = CURRENT_EVENT ? CURRENT_EVENT.dateLines : ["", ""];
-const ACCENTS_FILE = `assets/images/accents-post-${CURRENT_EVENT ? CURRENT_EVENT.discipline : "lead"}.png`;
+const ACCENTS_FILE = `assets/images/accent-series-post-${CURRENT_EVENT ? CURRENT_EVENT.discipline : "lead"}.png`;
 const DOMAIN_TEXT = "worldclimbing.com";
 const TEXT_COLOR = "#03111F";
 
 const CANVAS_W = 1080;
-const CANVAS_H = 1440; // 3:4 Post (Continents_Digital_Banner_template_3-4.psd)
+const CANVAS_H = 1350; // 4:5 Instagram-Post (Series_Social_Media_template_3-4.psd)
 
-// Position der Foto-Fläche (Bounding Box der Blob-Form innerhalb der Canvas)
-// (Alpha-Bounding-Box von photo-mask-post.png: x 229-1080, y 199-1440)
-const PHOTO_BOX = { x: 229, y: 199, w: 851, h: 1241 };
+// Position der Foto-Fläche (Alpha-Bounding-Box von photo-mask-series-post.png)
+const PHOTO_BOX = { x: 0, y: 0, w: 845, h: 1177 };
 
 // Logo-Box: rechts/oben ausgerichtet, Größe passt sich dem Logo-Seitenverhältnis an
-const LOGO_BOX = { right: 1043, top: 38, maxW: 300, maxH: 185 };
+const LOGO_BOX = { right: 1043, top: 29, maxW: 300, maxH: 185 };
 
-// Textpositionen (x, Baseline-y): Titel oben über dem Foto, Datum & Name unten darunter
-const TITLE_POS = { x: 40, y: 942, size: 125 };
-const DATE_POS = { x: 40, y: 1065, size: 65, lineHeight: 80 };
-const NAME_POS = { x: 40, y: 1260, size: 65 };
-
-// Domain am linken Rand, um 90° gedreht (liest von unten nach oben)
-const DOMAIN_POS = { x: 44, yBottom: 820, size: 26 };
+// Textpositionen (Baseline-y) nach dem PSD-Layout "Series":
+// grosse Headline (zentriert) unten, Datum + Land rechtsbuendig rechts
+// neben dem Foto, eigener Text + Domain unten links.
+const TITLE_POS = { centerX: 540, y: 1189, size: 244, maxW: 1026 };
+const DATE_POS = { right: 1043, y: 903, size: 56, lineHeight: 62, maxW: 330 };
+const INFO_POS = { right: 1043, y: 624, size: 40, lineHeight: 50, maxW: 270 };
+const NAME_POS = { x: 40, y: 1285, size: 56, maxW: 520 };
+const DOMAIN_POS = { x: 40, y: 1332, size: 26 };
 
 const FONT_FAMILY = "WorldClimbingBold";
 // WorldClimbingBold hat keine Ziffern/&-Zeichen, darum fürs Datum eine
@@ -115,40 +115,56 @@ function drawLogo() {
   ctx.drawImage(logo, x, y, w, h);
 }
 
+// Setzt die Schrift so, dass der Text in maxW passt (nur verkleinern).
+function fitFont(text, family, size, maxW) {
+  ctx.font = `${size}px "${family}"`;
+  const w = ctx.measureText(text).width;
+  if (w > maxW) {
+    size = Math.max(10, Math.floor(size * (maxW / w)));
+    ctx.font = `${size}px "${family}"`;
+  }
+  return size;
+}
+
 function drawTexts() {
   ctx.fillStyle = TEXT_COLOR;
   ctx.textBaseline = "alphabetic";
 
-  // Manche Stadtnamen ("SALT LAKE CITY") sind deutlich länger als
-  // "AUGSBURG" - Schriftgröße bei Bedarf verkleinern, damit nichts über
-  // den rechten Rand hinausläuft.
-  const maxTitleWidth = CANVAS_W - TITLE_POS.x - 40;
-  let titleSize = TITLE_POS.size;
-  ctx.font = `${titleSize}px "${FONT_FAMILY}"`;
-  const titleWidth = ctx.measureText(TITLE_TEXT).width;
-  if (titleWidth > maxTitleWidth) {
-    titleSize = Math.floor(titleSize * (maxTitleWidth / titleWidth));
-    ctx.font = `${titleSize}px "${FONT_FAMILY}"`;
-  }
-  ctx.fillText(TITLE_TEXT, TITLE_POS.x, TITLE_POS.y);
+  // Headline: Stadtname gross und zentriert; lange Namen ("SALT LAKE CITY")
+  // werden verkleinert, damit nichts ueber den Rand laeuft.
+  ctx.textAlign = "center";
+  fitFont(TITLE_TEXT, FONT_FAMILY, TITLE_POS.size, TITLE_POS.maxW);
+  ctx.fillText(TITLE_TEXT, TITLE_POS.centerX, TITLE_POS.y);
 
-  ctx.font = `${DATE_POS.size}px "${DATE_FONT_FAMILY}"`;
+  // Datum + Land rechtsbuendig (Ziffern -> Mono-Schrift, siehe oben)
+  ctx.textAlign = "right";
   DATE_LINES.forEach((line, i) => {
-    ctx.fillText(line, DATE_POS.x, DATE_POS.y + i * DATE_POS.lineHeight);
+    fitFont(line, DATE_FONT_FAMILY, DATE_POS.size, DATE_POS.maxW);
+    ctx.fillText(line, DATE_POS.right, DATE_POS.y + i * DATE_POS.lineHeight);
   });
 
+  // Land: bei mehreren Woertern auf zwei Zeilen verteilt (wie "Generic info" im PSD)
+  const country = CURRENT_EVENT ? CURRENT_EVENT.country : "";
+  if (country) {
+    const parts = country.split(" ");
+    const lines = parts.length > 1 ? [parts.slice(0, -1).join(" "), parts[parts.length - 1]] : [country];
+    // Untere Zeile bleibt bei y=INFO_POS.y + lineHeight; einzeilig steht sie dort.
+    const startY = lines.length === 1 ? INFO_POS.y + INFO_POS.lineHeight : INFO_POS.y;
+    lines.forEach((line, i) => {
+      fitFont(line, DATE_FONT_FAMILY, INFO_POS.size, INFO_POS.maxW);
+      ctx.fillText(line, INFO_POS.right, startY + i * INFO_POS.lineHeight);
+    });
+  }
+
+  ctx.textAlign = "left";
   const name = nameInput.value.trim();
   if (name) {
-    ctx.font = `${NAME_POS.size}px "${FONT_FAMILY}"`;
+    fitFont(name, FONT_FAMILY, NAME_POS.size, NAME_POS.maxW);
     ctx.fillText(name, NAME_POS.x, NAME_POS.y);
   }
 
-  ctx.save();
-  ctx.translate(DOMAIN_POS.x, DOMAIN_POS.yBottom);
-  ctx.rotate(-Math.PI / 2);
   ctx.font = `${DOMAIN_POS.size}px "${FONT_FAMILY}"`;
-  ctx.fillText(DOMAIN_TEXT, 0, 0);
-  ctx.restore();
+  ctx.fillText(DOMAIN_TEXT, DOMAIN_POS.x, DOMAIN_POS.y);
 }
 
 function render() {
@@ -167,7 +183,6 @@ function render() {
     ctx.drawImage(offCanvas, 0, 0);
   }
 
-  if (assets.chalk) ctx.drawImage(assets.chalk, 0, 0, CANVAS_W, CANVAS_H);
   if (assets.accents) ctx.drawImage(assets.accents, 0, 0, CANVAS_W, CANVAS_H);
 
   drawLogo();
@@ -356,16 +371,14 @@ shareBtn.addEventListener("click", () => {
 
 // ---- Init ----
 async function init() {
-  const [bg, mask, chalk, accents, logo] = await Promise.all([
-    loadImage("assets/images/bg-post.png"),
-    loadImage("assets/images/photo-mask-post.png"),
-    loadImage("assets/images/chalk-post.png"),
+  const [bg, mask, accents, logo] = await Promise.all([
+    loadImage("assets/images/bg-series-post.png"),
+    loadImage("assets/images/photo-mask-series-post.png"),
     loadImage(ACCENTS_FILE),
     loadImage("assets/images/logo-generic.png"),
   ]);
   assets.bg = bg;
   assets.mask = mask;
-  assets.chalk = chalk;
   assets.accents = accents;
   assets.logo = logo;
 

@@ -536,10 +536,12 @@ a.format-card:hover {
 .format-card__shape--story,
 .format-card__shape--story-table { aspect-ratio: 9 / 16; height: 76px; }
 .format-card__shape--post,
-.format-card__shape--post-table { aspect-ratio: 3 / 4; height: 72px; }
+.format-card__shape--post-table { aspect-ratio: 4 / 5; height: 72px; }
+.format-card__shape--a3 { aspect-ratio: 1 / 1.414; height: 80px; }
 
 .format-card__shape--story,
-.format-card__shape--post {
+.format-card__shape--post,
+.format-card__shape--a3 {
   background: radial-gradient(circle at 70% 70%, var(--accent) 0 38%, #fff 40%);
 }
 
@@ -643,4 +645,40 @@ a.format-card:hover {
 
 .button[hidden] {
   display: none;
+}
+
+/* Event poster form extras */
+.field textarea {
+  font: inherit;
+  font-weight: 400;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  resize: vertical;
+  min-width: 0;
+}
+
+.field input[type="url"] {
+  font: inherit;
+  font-weight: 400;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.partners {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 14px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.partners legend {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 6px;
 }

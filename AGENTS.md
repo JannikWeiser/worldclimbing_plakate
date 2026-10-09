@@ -296,12 +296,16 @@ canvas draws with `setTransform(k,…)` so preview (k=2) and export share
 - Partner strip (beige, y ≥ 1071.5): three groups (`PARTNER_GROUPS`
   A=15, B=8, C=6 slots; big boxes top row, small boxes bottom row). Only
   slots with an uploaded logo (and the group's label + divider) are drawn;
-  extra files are ignored. **Everything in a group is left-aligned**
-  (user request 2026-10-09): divider, label and first logo sit at the
-  group's left edge - the template had the B/C labels right-aligned, we
-  deliberately deviate. B's bottom row only has 4 slots so it never runs
-  into C. The form tells users to select all logos of a group in one go
-  (a new selection replaces the old one; file inputs can't be appended to).
+  extra files are ignored. Layout follows the template: group A has its
+  divider on the left and fills left→right; **B and C ("Organised main
+  partners", "Organiser") have label + divider at their RIGHT edge, and
+  the first logo sits directly next to that divider, further logos follow
+  towards the left** (`rowSlotsRtl`). History: on 2026-10-09 I first
+  misread the request and left-aligned everything - that was wrong, the
+  user wanted the template's right-hand dividers with right-to-left
+  filling. B's bottom row only has 4 slots so it never runs into C. The
+  form tells users to select all logos of a group in one go (a new
+  selection replaces the old one; file inputs can't be appended to).
 - Logos: user said "WorldClimbing logo for now" → `logo-generic.png` in both
   logo slots (top right and bottom-left lockup next to the city title).
   Replace later when real event logos exist (TOP_LOGO / LOCKUP constants).

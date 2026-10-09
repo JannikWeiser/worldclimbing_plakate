@@ -690,3 +690,12 @@ a.format-card:hover {
 .partners__hint {
   margin: 0;
 }
+
+.photo-hint {
+  margin: -8px 0 0;
+}
+
+#removePhotoBtn {
+  margin-top: 12px;
+  width: 100%;
+}

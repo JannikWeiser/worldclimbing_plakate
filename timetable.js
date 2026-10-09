@@ -1,6 +1,7 @@
 // Timetable (Story 9:16 oder Post 3:4, per ?format=story|post): gleiche Optik
 // wie das Foto-Poster (app.js / post.js), aber statt Foto-Blob steht ein vom
-// Nutzer eingetragener Zeitplan auf dem Poster.
+// Nutzer eingetragener Zeitplan auf dem Poster. Optional kann ein Foto in einem
+// kleineren Blob daneben stehen (dann wird der Zeitplan schmaler).
 // Bewusst eigene Datei: app.js (Story mit Foto, Download, Share) bleibt
 // unveraendert; Download/Share-Logik ist hier 1:1 nachgebaut.
 
@@ -30,6 +31,8 @@ const FORMATS = {
     name: { x: 40, y: 1760, size: 65 },
     domain: { x: 44, yBottom: 1420, size: 26 },
     tt: { x: 100, right: 1020, headingY: 570, headingSize: 64, top: 630, bottom: 1490 },
+    // Foto-Blob rechts neben dem Zeitplan; bis narrowUntil ist der Zeitplan nur bis narrowRight breit
+    photo: { dest: { x: 650, y: 560, w: 400, h: 478 }, narrowRight: 610, narrowUntil: 1060 },
   },
   // Series-Design (Series_Social_Media_template_3-4.psd, 1080x1350 = 4:5).
   // Gross-Headline unten, Datum rechtsbuendig rechts, Zeitplan oben links.
@@ -45,11 +48,19 @@ const FORMATS = {
     name: { x: 40, y: 1285, size: 56, maxW: 520 },
     domain: { x: 40, y: 1332, size: 26, rotate: false },
     tt: { x: 60, right: 1020, headingY: 135, headingSize: 64, top: 235, bottom: 1000, rightLow: { y: 830, x: 710 } },
+    photo: { dest: { x: 660, y: 240, w: 380, h: 454 }, narrowRight: 630, narrowUntil: 710 },
   },
 };
 const formatParam = new URLSearchParams(location.search).get("format");
 const FORMAT_KEY = formatParam === "post" ? "post" : "story";
 const FMT = FORMATS[FORMAT_KEY];
+const PHOTO = FMT.photo;
+
+// Vollstaendiger Blob aus dem Event-Poster (.ai), siehe eventposter.js;
+// tatsaechliche Ausdehnung ca. x 96.8-864.1, y -26.0-891.1
+const BLOB_PATH =
+  "M754.20 732.26 C719.37 801.71 690.04 861.81 655.14 882.96 L653.88 883.70 C555.97 947.73 316.00 577.86 260.23 499.80 C185.41 378.91 7.40 135.40 151.29 15.36 C216.21 -34.19 338.04 -35.32 448.74 -8.65 C597.08 26.37 741.92 110.90 818.33 246.23 C919.09 418.98 833.43 573.52 754.20 732.26 Z";
+const BLOB_BBOX = { x: 96.8, y: -26.0, w: 767.3, h: 917.1 };
 
 const ACCENTS_FILE = `assets/images/${FMT.accentsPrefix}-${DISCIPLINE}.png`;
 const DOMAIN_TEXT = "worldclimbing.com";
@@ -94,6 +105,11 @@ const stageHint = document.getElementById("stageHint");
 const nameInput = document.getElementById("nameInput");
 const rowsEl = document.getElementById("rows");
 const addRowBtn = document.getElementById("addRowBtn");
+const stage = document.getElementById("stage");
+const photoInput = document.getElementById("photoInput");
+const photoControls = document.getElementById("photoControls");
+const zoomRange = document.getElementById("zoomRange");
+const removePhotoBtn = document.getElementById("removePhotoBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 const shareBtn = document.getElementById("shareBtn");
 const shareStatus = document.getElementById("shareStatus");
@@ -113,6 +129,10 @@ function loadImage(src) {
 }
 
 const assets = {};
+let userImg = null;
+let userImgNatural = { w: 0, h: 0 };
+const photoState = { zoom: 1, panX: 0, panY: 0 };
+let baseScale = 1;
 
 // ---- Formular: Zeilen ----
 function addRow(values) {
@@ -267,12 +287,19 @@ function drawTimetable(entries) {
   // Zeitspalte so breit wie die breiteste Zeit (max. 410px = 13 Zeichen), Session rechts daneben.
   ctx.font = `${52 * s}px "${DATA_FONT_FAMILY}"`;
   const widest = entries.reduce((m, e) => Math.max(m, ctx.measureText(e.time).width), 0);
-  const timeColW = Math.min(widest, 410 * s);
+  // Mit Foto ist der Zeitplan schmaler: Zeitspalte hoechstens 40 % der Breite.
+const narrowW = userImg ? PHOTO.narrowRight - TT.x : TT.right - TT.x;
+  const timeColW = Math.min(widest, 410 * s, narrowW * 0.4);
+  // Alle Zeiten gleich gross: ist die breiteste zu breit, schrumpfen alle gemeinsam.
+  const timeSize = widest > timeColW ? 52 * s * (timeColW / widest) : 52 * s;
   const sessionX = TT.x + (timeColW > 0 ? timeColW + 40 * s : 0);
 
   // Rechter Rand je Hoehe: Beim Post (Series) stehen unten rechts Datum und
   // Akzent-Blob - ab TT.rightLow.y rueckt der Zeitplan deshalb nach links.
-  const rightEdgeAt = (yy) => (TT.rightLow && yy >= TT.rightLow.y ? TT.rightLow.x : TT.right);
+  const rightEdgeAt = (yy) => {
+    if (userImg && yy < PHOTO.narrowUntil) return PHOTO.narrowRight;
+    return TT.rightLow && yy >= TT.rightLow.y ? TT.rightLow.x : TT.right;
+  };
 
   let y = TT.top;
   ctx.textBaseline = "alphabetic";
@@ -290,7 +317,8 @@ function drawTimetable(entries) {
     const sessionMaxW = rightEdgeAt(y + 82 * s) - sessionX;
     ctx.fillStyle = TEXT_COLOR;
     if (e.time) {
-      drawFitted(e.time, TT.x, y + 48 * s, 52 * s, timeColW);
+      ctx.font = `${timeSize}px "${DATA_FONT_FAMILY}"`;
+      ctx.fillText(e.time, TT.x, y + 48 * s);
     }
     if (e.session) {
       drawFitted(e.session.toUpperCase(), sessionX, y + 42 * s, 40 * s, sessionMaxW);
@@ -388,6 +416,7 @@ function render() {
   ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
   if (assets.bg) ctx.drawImage(assets.bg, 0, 0, CANVAS_W, CANVAS_H);
   // Kein Chalk-Blob: der gehoert zum Foto-Poster, hier steht der Zeitplan.
+  drawPhotoBlob();
   if (assets.accents) ctx.drawImage(assets.accents, 0, 0, CANVAS_W, CANVAS_H);
 
   drawLogo();
@@ -401,6 +430,134 @@ function render() {
   downloadBtn.disabled = !hasEntries;
   shareBtn.disabled = !hasEntries;
 }
+
+// ---- Optionales Foto im kleinen Blob ----
+function computeBaseScale() {
+  if (!userImg) return 1;
+  return Math.max(PHOTO.dest.w / userImgNatural.w, PHOTO.dest.h / userImgNatural.h);
+}
+
+function drawPhotoBlob() {
+  if (!userImg) return;
+  const d = PHOTO.dest;
+  const sc = d.w / BLOB_BBOX.w;
+  ctx.save();
+  ctx.translate(d.x - BLOB_BBOX.x * sc, d.y - BLOB_BBOX.y * sc);
+  ctx.scale(sc, sc);
+  ctx.clip(new Path2D(BLOB_PATH));
+  // Clip bleibt im Geraeteraum bestehen - ab hier in Canvas-Koordinaten zeichnen
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const scale = baseScale * photoState.zoom;
+  const w = userImgNatural.w * scale;
+  const h = userImgNatural.h * scale;
+  const cx = d.x + d.w / 2 + photoState.panX;
+  const cy = d.y + d.h / 2 + photoState.panY;
+  ctx.drawImage(userImg, cx - w / 2, cy - h / 2, w, h);
+  ctx.restore();
+}
+
+// Ziehen: Maus mit einem Klick, Touch mit zwei Fingern (ein Finger scrollt die Seite)
+let dragging = false;
+let dragStart = { x: 0, y: 0 };
+let panStart = { x: 0, y: 0 };
+const activeTouches = new Map();
+
+function pointerPos(evt) {
+  return { x: evt.clientX, y: evt.clientY };
+}
+function touchCentroid() {
+  const pts = [...activeTouches.values()];
+  const sum = pts.reduce((a, p) => ({ x: a.x + p.x, y: a.y + p.y }), { x: 0, y: 0 });
+  return { x: sum.x / pts.length, y: sum.y / pts.length };
+}
+function startDrag(pos) {
+  dragging = true;
+  dragStart = pos;
+  panStart = { x: photoState.panX, y: photoState.panY };
+}
+function tryCapture(pointerId) {
+  try {
+    stage.setPointerCapture(pointerId);
+  } catch (e) {
+    // nice to have - Verschieben soll auch ohne Capture funktionieren
+  }
+}
+
+stage.addEventListener("pointerdown", (evt) => {
+  if (!userImg) return;
+  if (evt.pointerType === "touch") {
+    activeTouches.set(evt.pointerId, pointerPos(evt));
+    if (activeTouches.size === 2) {
+      tryCapture(evt.pointerId);
+      startDrag(touchCentroid());
+    }
+    return;
+  }
+  tryCapture(evt.pointerId);
+  startDrag(pointerPos(evt));
+});
+
+stage.addEventListener("pointermove", (evt) => {
+  if (evt.pointerType === "touch") {
+    if (!activeTouches.has(evt.pointerId)) return;
+    activeTouches.set(evt.pointerId, pointerPos(evt));
+    if (activeTouches.size < 2 || !dragging) return;
+    evt.preventDefault();
+  }
+  if (!dragging) return;
+  const p = evt.pointerType === "touch" ? touchCentroid() : pointerPos(evt);
+  const f = CANVAS_W / stage.getBoundingClientRect().width;
+  photoState.panX = panStart.x + (p.x - dragStart.x) * f;
+  photoState.panY = panStart.y + (p.y - dragStart.y) * f;
+  render();
+});
+
+function endDrag(evt) {
+  if (evt.pointerType === "touch") {
+    activeTouches.delete(evt.pointerId);
+    if (activeTouches.size < 2) dragging = false;
+    return;
+  }
+  dragging = false;
+}
+stage.addEventListener("pointerup", endDrag);
+stage.addEventListener("pointercancel", endDrag);
+stage.addEventListener("pointerleave", endDrag);
+
+zoomRange.addEventListener("input", () => {
+  photoState.zoom = parseFloat(zoomRange.value);
+  render();
+});
+
+photoInput.addEventListener("change", async () => {
+  const file = photoInput.files[0];
+  if (!file) return;
+  const dataUrl = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
+  const img = dataUrl && (await loadImage(dataUrl));
+  if (!img) return;
+
+  userImg = img;
+  userImgNatural = { w: img.naturalWidth, h: img.naturalHeight };
+  baseScale = computeBaseScale();
+  photoState.zoom = 1;
+  photoState.panX = 0;
+  photoState.panY = 0;
+  zoomRange.value = "1";
+  photoControls.hidden = false;
+  render();
+});
+
+removePhotoBtn.addEventListener("click", () => {
+  userImg = null;
+  photoInput.value = "";
+  photoControls.hidden = true;
+  render();
+});
 
 // ---- Download (wie in app.js) ----
 function exportFileName() {

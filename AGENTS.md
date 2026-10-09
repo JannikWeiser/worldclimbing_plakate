@@ -318,9 +318,20 @@ canvas draws with `setTransform(k,…)` so preview (k=2) and export share
 
 ### Timetables (`timetable.js`, `?format=story|post`)
 
-- No photo. Draws: `bg-base` → discipline `accents` → logo → title →
-  "TIMETABLE" heading → rows → date → optional "Your text" → rotated domain.
-  The chalk/blob layer is intentionally skipped (belongs to the photo).
+- Draws: `bg` → (optional photo blob) → discipline `accents` → logo → title →
+  "TIMETABLE" heading → rows → date → optional "Your text" → domain.
+  The chalk/blob layer of the photo posters is intentionally skipped.
+- **Optional photo (added 2026-10-09, user chose "small blob")**: file
+  input + zoom + drag (same two-finger/mouse logic as `app.js`) + "Remove
+  photo" button. The photo is clipped to the *full* event-poster blob
+  (`BLOB_PATH`, copied from `eventposter.js`) scaled into `FMT.photo.dest`
+  (story: x650 y560 400x478, right column; post: x660 y240 380x454). The
+  photo posters' own masks are NOT reused because they are cut off by the
+  canvas edge and look wrong when shrunk. With a photo the timetable gets
+  narrower: above `photo.narrowUntil` rows may only extend to
+  `photo.narrowRight` (`rightEdgeAt()`), the time column is capped at 40 %
+  of that width and all times shrink together (`timeSize`). Without photo
+  nothing changes. Download/Share don't depend on the photo.
 - Rows are entered by the user (Day, Time, Session, Start class select, exactly the list the user specified on 2026-10-09: –, Men, Women, and for each of U17 / U19 / U21: "<U> Men", "<U> Women", "<U> Women and Men" (`START_CLASSES` in `timetable.js`; the chosen text is printed 1:1 in capitals). An earlier version had Juniors/Youth A-C + custom class + separate gender select - replaced because the user gave the real class list). No timetable data lives in `events.js` -
   user chose manual entry (no invented data). Max 10 rows (`MAX_ROWS`),
   at least one row always remains; rows with neither time nor session are

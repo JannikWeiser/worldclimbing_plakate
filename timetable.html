@@ -21,9 +21,24 @@
           <canvas id="previewCanvas" width="1080" height="1920"></canvas> <!-- real size is set in timetable.js (story/post) -->
           <div class="stage__hint" id="stageHint">Add at least one schedule entry to get started</div>
         </div>
+
+        <div class="controls" id="photoControls" hidden>
+          <label class="control">
+            <span>Zoom</span>
+            <input type="range" id="zoomRange" min="1" max="3" step="0.01" value="1">
+          </label>
+          <p class="hint">Tip: drag the photo with your mouse (on mobile: with two fingers) to adjust the crop. With one finger you can keep scrolling the page normally.</p>
+          <button type="button" id="removePhotoBtn" class="button button--secondary">Remove photo</button>
+        </div>
       </section>
 
       <section class="form">
+        <label class="field">
+          <span>Photo (optional)</span>
+          <input type="file" id="photoInput" accept="image/*">
+        </label>
+        <p class="hint photo-hint">With a photo, the timetable gets narrower to make room for it.</p>
+
         <div class="tt-rows" id="rows"></div>
         <button type="button" id="addRowBtn" class="button button--secondary">+ Add entry</button>
         <p class="hint" id="rowsHint">Up to 10 entries. Entries with the same day are grouped under one heading.</p>

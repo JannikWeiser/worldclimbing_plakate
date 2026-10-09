@@ -293,10 +293,15 @@ canvas draws with `setTransform(k,…)` so preview (k=2) and export share
 - Ticketing: label + text + QR. QR is generated locally with the vendored
   `vendor/qrcode.min.js` (qrcode-generator 1.4.4, MIT) from the link field;
   invalid/too long → QR silently omitted.
-- Partner strip (beige, y ≥ 1071.5): three groups with slot lists
-  (`PARTNER_GROUPS` A=15, B=9, C=6 slots; big boxes top row, small boxes
-  bottom row). Only slots with an uploaded logo (and their label/rule) are
-  drawn; extra files are ignored.
+- Partner strip (beige, y ≥ 1071.5): three groups (`PARTNER_GROUPS`
+  A=15, B=8, C=6 slots; big boxes top row, small boxes bottom row). Only
+  slots with an uploaded logo (and the group's label + divider) are drawn;
+  extra files are ignored. **Everything in a group is left-aligned**
+  (user request 2026-10-09): divider, label and first logo sit at the
+  group's left edge - the template had the B/C labels right-aligned, we
+  deliberately deviate. B's bottom row only has 4 slots so it never runs
+  into C. The form tells users to select all logos of a group in one go
+  (a new selection replaces the old one; file inputs can't be appended to).
 - Logos: user said "WorldClimbing logo for now" → `logo-generic.png` in both
   logo slots (top right and bottom-left lockup next to the city title).
   Replace later when real event logos exist (TOP_LOGO / LOCKUP constants).

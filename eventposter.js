@@ -94,28 +94,28 @@ function rowSlots(row, x0, pitch, from, to) {
   for (let i = from; i <= to; i++) out.push({ x: x0 + pitch * i, y: row.y, w: row.w, h: row.h });
   return out;
 }
-// Reihenfolge = Reihenfolge der hochgeladenen Logos (erst obere, dann untere Reihe)
+// Reihenfolge = Reihenfolge der hochgeladenen Logos (erst obere, dann untere Reihe).
+// Jede Gruppe ist linksbuendig: Trennlinie, Label und erstes Logo sitzen am
+// linken Rand der Gruppe (die Vorlage hatte die Labels rechtsbuendig).
 const PARTNER_GROUPS = {
   A: {
     label: "WORLD CLIMBING PARTNERS",
     labelX: 28.3,
-    labelAlign: "left",
     rule: 25.8,
     slots: [...rowSlots(BIG, 28.5, 53.6, 0, 6), ...rowSlots(SMALL, 28.3, 46.77, 0, 7)],
   },
   B: {
     label: "ORGANISED MAIN PARTNERS",
-    labelX: 651.3,
-    labelAlign: "right",
-    rule: 654.6,
-    slots: [...rowSlots(BIG, 443.3, 53.6, 0, 3), ...rowSlots(SMALL, 443.2, 46.77, 0, 4)],
+    labelX: 443.3,
+    rule: 440.8,
+    // untere Reihe nur 4 Slots, damit sie nicht in Gruppe C hineinragt
+    slots: [...rowSlots(BIG, 443.3, 53.6, 0, 3), ...rowSlots(SMALL, 443.2, 46.77, 0, 3)],
   },
   C: {
     label: "ORGANISER",
-    labelX: 812.4,
-    labelAlign: "right",
-    rule: 815,
-    slots: [...rowSlots(BIG, 443.3, 53.6, 4, 6), ...rowSlots(SMALL, 443.2, 46.77, 5, 7)],
+    labelX: 657.7,
+    rule: 654.6,
+    slots: [...rowSlots(BIG, 657.7, 53.6, 0, 2), ...rowSlots(SMALL, 657.7, 46.77, 0, 2)],
   },
 };
 
@@ -359,9 +359,8 @@ function drawPoster(c, k, opts) {
     if (!logos.length) return;
     c.fillStyle = INK;
     c.font = `${STRIP.labelSize}px "${FONT_MONO}"`;
-    c.textAlign = g.labelAlign;
-    c.fillText(g.label, g.labelX, STRIP.labelY);
     c.textAlign = "left";
+    c.fillText(g.label, g.labelX, STRIP.labelY);
     c.strokeStyle = INK;
     c.lineWidth = 0.5;
     c.beginPath();

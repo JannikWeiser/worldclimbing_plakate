@@ -536,7 +536,7 @@ a.format-card:hover {
 .format-card__shape--story,
 .format-card__shape--story-table { aspect-ratio: 9 / 16; height: 76px; }
 .format-card__shape--post,
-.format-card__shape--post-table { aspect-ratio: 4 / 5; height: 64px; }
+.format-card__shape--post-table { aspect-ratio: 3 / 4; height: 72px; }
 
 .format-card__shape--story,
 .format-card__shape--post {

@@ -42,12 +42,12 @@
         `${selected.city}, ${selected.country} · ${selected.dateLines[0]} ${selected.dateLines[1]} – what would you like to create?`;
 
       const q = `?event=${encodeURIComponent(selected.id)}`;
-      // href = null -> noch nicht verfuegbar (wartet auf die Post-Vorlage).
+      // href = null -> Karte ist deaktiviert ("Coming soon").
       const FORMATS = [
         { name: "Story", desc: "Your photo on a 9:16 story poster", shape: "story", href: `generator.html${q}` },
-        { name: "Post", desc: "Your photo on a feed post", shape: "post", href: null },
-        { name: "Story Timetable", desc: "Schedule as a 9:16 story", shape: "story-table", href: `timetable.html${q}` },
-        { name: "Post Timetable", desc: "Schedule as a feed post", shape: "post-table", href: null },
+        { name: "Post", desc: "Your photo on a 3:4 feed post", shape: "post", href: `post.html${q}` },
+        { name: "Story Timetable", desc: "Schedule as a 9:16 story", shape: "story-table", href: `timetable.html${q}&format=story` },
+        { name: "Post Timetable", desc: "Schedule as a 3:4 feed post", shape: "post-table", href: `timetable.html${q}&format=post` },
       ];
 
       const list = document.getElementById("formatList");

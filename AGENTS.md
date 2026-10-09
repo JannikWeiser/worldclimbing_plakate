@@ -228,22 +228,36 @@ needs revisiting:
 | Card | Page | Status |
 |------|------|--------|
 | Story | `generator.html?event=<id>` (`app.js`, unchanged logic) | live |
-| Story Timetable | `timetable.html?event=<id>` (`timetable.js`) | live |
-| Post | – | **"Coming soon"** – needs a post-sized PSD from the user |
-| Post Timetable | – | **"Coming soon"** – same reason |
+| Post | `post.html?event=<id>` (`post.js`) | live (2026-10-09) |
+| Story Timetable | `timetable.html?event=<id>&format=story` (`timetable.js`) | live |
+| Post Timetable | `timetable.html?event=<id>&format=post` (`timetable.js`) | live (2026-10-09) |
 
-- `event.html` holds a `FORMATS` array; a card with `href: null` renders as
-  a disabled div with a "Coming soon" badge. To enable Post, add the page
-  and set the `href`. Unknown/missing `?event=` redirects to `index.html`.
-- `generator.html`'s back-link now points to `event.html?event=<id>` (inline
-  script at the bottom of the file); `app.js` was not touched.
-- **Post format is undecided**: user said they will supply a PSD. Don't
-  guess dimensions (1080x1350 vs 1080x1080) - wait for the file, probe it
-  as described in "Asset pipeline", then build `post` / `post-timetable`.
-  `timetable.js` currently hardcodes the story canvas (1080x1920); for the
-  post variant either parametrise it or copy it.
+- `event.html` holds a `FORMATS` array; an entry with `href: null` renders
+  as a disabled card with a "Coming soon" badge. Unknown/missing `?event=`
+  redirects to `index.html`.
+- `generator.html`'s and `post.html`'s back-link point to
+  `event.html?event=<id>` (inline script at the bottom of each file).
+- **Post = 1080x1440 (3:4)**, from `Continents_Digital_Banner_template_3-4.psd`
+  (same design family as the story, so same blob/chalk/accents/logo
+  approach). `post.js` is a *copy* of `app.js` with post constants (kept
+  as a copy on purpose so the Story page can't regress). Assets:
+  `bg-post.png`, `photo-mask-post.png`, `chalk-post.png`,
+  `accents-post-{boulder,lead,speed,generic}.png`, exported with the same
+  recipe as the story ones (see "Asset pipeline"). Post positions
+  (from the PSD text layers: title 125px at x40/baseline≈942; date mono
+  65px; logo box right 1043/top 38): `PHOTO_BOX` = alpha bbox of the mask
+  (229,199,851x1241); title (40,942,125); date (40,1065, lh 80); name
+  (40,1260); rotated domain (44, yBottom 820) - placed above the title
+  because the left gutter below it is occupied by date/name. Title
+  overlays the photo blob on purpose (as in the PSD).
+- Other templates the user supplied on 2026-10-09 but that are **not used**
+  (different design family, "World Climbing **Series**"):
+  `Series_Social_Media_template_9-16.psd` (1080x1920),
+  `Series_Social_Media_template_3-4.psd` (1080x1350 despite the name),
+  and `Continents_Event_Poster_26_templ_RGB.ai` (A-format print poster).
+  Ask the user before building on them.
 
-### Story Timetable (`timetable.js`)
+### Timetables (`timetable.js`, `?format=story|post`)
 
 - No photo. Draws: `bg-base` → discipline `accents` → logo → title →
   "TIMETABLE" heading → rows → date → optional "Your text" → rotated domain.
@@ -258,7 +272,13 @@ needs revisiting:
 - Fonts: `WorldClimbingBold` only has letters + space (no digits, hyphen,
   &, comma) so only "TIMETABLE"/title/name/domain use it; all data text
   uses `AntarcticanMono`. Don't draw user data in the bold font.
-- Layout area `TT` (y 630-1490). If content is taller it is scaled down
+- Per-format config lives in the `FORMATS` object at the top of
+  `timetable.js` (canvas size, bg, accents prefix, logo/title/date/name/
+  domain positions, timetable area `TT`). Canvas size and the stage
+  aspect-ratio are set from JS; unknown `format` falls back to story.
+  Post positions for the timetable are my own design (title y330, heading
+  y430, rows y480-1170, date y1215, name y1385), not from a PSD.
+- Layout area `TT` (story: y 630-1490). If content is taller it is scaled down
   uniformly (`s`), so nothing can overlap the date. Long text is shrunk
   to fit (`drawFitted`, floor 40 %); days/time columns are truncated with "...".
 - Download/Share code is a deliberate copy of `app.js` (same behaviour,
@@ -308,7 +328,8 @@ at real mobile width.
 
 ## Asset pipeline (regenerating from the source PSD)
 
-The `.psd` in this folder (`Continents_Digital_Banner_template_9-16.psd`)
+The `.psd` in this folder (`Continents_Digital_Banner_template_9-16.psd`;
+the post equivalent `..._3-4.psd` lives in the user's Downloads, 1080x1440)
 is the design source (Photoshop, ~238MB, git-ignored). If assets ever
 need re-exporting (e.g. a new discipline colour, a template change):
 

@@ -1,5 +1,6 @@
-// Story-Timetable: gleiche Optik wie das Story-Poster (app.js), aber statt
-// Foto-Blob steht ein vom Nutzer eingetragener Zeitplan auf dem Poster.
+// Timetable (Story 9:16 oder Post 3:4, per ?format=story|post): gleiche Optik
+// wie das Foto-Poster (app.js / post.js), aber statt Foto-Blob steht ein vom
+// Nutzer eingetragener Zeitplan auf dem Poster.
 // Bewusst eigene Datei: app.js (Story mit Foto, Download, Share) bleibt
 // unveraendert; Download/Share-Logik ist hier 1:1 nachgebaut.
 
@@ -12,32 +13,60 @@ const CURRENT_EVENT =
 const TITLE_TEXT = CURRENT_EVENT ? CURRENT_EVENT.cityTitle : "WORLD CLIMBING";
 const DATE_LINES = CURRENT_EVENT ? CURRENT_EVENT.dateLines : ["", ""];
 const DISCIPLINE = CURRENT_EVENT ? CURRENT_EVENT.discipline : "lead";
-const ACCENTS_FILE = `assets/images/accents-${DISCIPLINE}.png`;
+// ---- Format: Story (1080x1920) oder Post (1080x1440) ----
+// Positionen der Story stammen aus app.js, die des Posts aus post.js /
+// Continents_Digital_Banner_template_3-4.psd; Timetable-Bereich (TT) ist
+// jeweils ein eigener Entwurf.
+const FORMATS = {
+  story: {
+    label: "Story",
+    w: 1080,
+    h: 1920,
+    accentsPrefix: "accents",
+    bg: "assets/images/bg-base.png",
+    logoBox: { right: 1043, top: 35, maxW: 340, maxH: 210 },
+    title: { x: 230, y: 430, size: 100 },
+    date: { x: 40, y: 1560, size: 65, lineHeight: 80 },
+    name: { x: 40, y: 1760, size: 65 },
+    domain: { x: 44, yBottom: 1420, size: 26 },
+    tt: { x: 100, right: 1020, headingY: 570, headingSize: 64, top: 630, bottom: 1490 },
+  },
+  post: {
+    label: "Post",
+    w: 1080,
+    h: 1440,
+    accentsPrefix: "accents-post",
+    bg: "assets/images/bg-post.png",
+    logoBox: { right: 1043, top: 38, maxW: 300, maxH: 185 },
+    title: { x: 40, y: 330, size: 110 },
+    date: { x: 40, y: 1215, size: 56, lineHeight: 68 },
+    name: { x: 40, y: 1385, size: 56 },
+    domain: { x: 44, yBottom: 1130, size: 26 },
+    tt: { x: 100, right: 1020, headingY: 430, headingSize: 56, top: 480, bottom: 1170 },
+  },
+};
+const formatParam = new URLSearchParams(location.search).get("format");
+const FORMAT_KEY = formatParam === "post" ? "post" : "story";
+const FMT = FORMATS[FORMAT_KEY];
+
+const ACCENTS_FILE = `assets/images/${FMT.accentsPrefix}-${DISCIPLINE}.png`;
 const DOMAIN_TEXT = "worldclimbing.com";
 const TEXT_COLOR = "#03111F";
 // Gleiche Farben wie die Disziplin-Punkte auf der Eventliste (style.css).
 const DISCIPLINE_COLORS = { boulder: "#e8a020", lead: "#12777a", speed: "#e8134b" };
 const ACCENT_COLOR = DISCIPLINE_COLORS[DISCIPLINE] || DISCIPLINE_COLORS.lead;
 
-const CANVAS_W = 1080;
-const CANVAS_H = 1920;
+const CANVAS_W = FMT.w;
+const CANVAS_H = FMT.h;
 
-// Positionen, die vom Story-Poster uebernommen sind (siehe app.js)
-const LOGO_BOX = { right: 1043, top: 35, maxW: 340, maxH: 210 };
-const TITLE_POS = { x: 230, y: 430, size: 100 };
-const DATE_POS = { x: 40, y: 1560, size: 65, lineHeight: 80 };
-const NAME_POS = { x: 40, y: 1760, size: 65 };
-const DOMAIN_POS = { x: 44, yBottom: 1420, size: 26 };
+const LOGO_BOX = FMT.logoBox;
+const TITLE_POS = FMT.title;
+const DATE_POS = FMT.date;
+const NAME_POS = FMT.name;
+const DOMAIN_POS = FMT.domain;
 
 // Timetable-Bereich: unter dem Titel, ueber dem Datum
-const TT = {
-  x: 100, // linker Rand (rechts neben dem gedrehten Domain-Text)
-  right: 1020,
-  headingY: 570, // Baseline "TIMETABLE"
-  headingSize: 64,
-  top: 630,
-  bottom: 1490,
-};
+const TT = FMT.tt;
 const MAX_ROWS = 10;
 
 const FONT_FAMILY = "WorldClimbingBold"; // nur Buchstaben, keine Ziffern/Satzzeichen
@@ -48,6 +77,9 @@ const CATEGORIES = ["", "Men", "Women", "Men & Women"];
 // ---- Setup ----
 const canvas = document.getElementById("previewCanvas");
 const ctx = canvas.getContext("2d");
+canvas.width = CANVAS_W;
+canvas.height = CANVAS_H;
+document.getElementById("stage").style.aspectRatio = `${CANVAS_W} / ${CANVAS_H}`;
 const stageHint = document.getElementById("stageHint");
 const nameInput = document.getElementById("nameInput");
 const rowsEl = document.getElementById("rows");
@@ -329,7 +361,7 @@ function render() {
 function exportFileName() {
   const fallbackName = CURRENT_EVENT ? CURRENT_EVENT.cityTitle.replace(/\s+/g, "_") : "World_Climbing";
   const namePart = nameInput.value.trim().replace(/\s+/g, "_") || fallbackName;
-  return `${namePart}_Timetable_Story.png`;
+  return `${namePart}_Timetable_${FMT.label}.png`;
 }
 
 downloadBtn.addEventListener("click", () => {
@@ -388,7 +420,7 @@ shareBtn.addEventListener("click", () => {
 // ---- Init ----
 async function init() {
   const [bg, accents, logo] = await Promise.all([
-    loadImage("assets/images/bg-base.png"),
+    loadImage(FMT.bg),
     loadImage(ACCENTS_FILE),
     loadImage("assets/images/logo-generic.png"),
   ]);
@@ -417,8 +449,8 @@ if (isInAppBrowser()) {
 if (CURRENT_EVENT) {
   const pageTitleEl = document.getElementById("pageTitle");
   const label = `${CURRENT_EVENT.city} World Cup – ${CURRENT_EVENT.discipline[0].toUpperCase()}${CURRENT_EVENT.discipline.slice(1)}`;
-  if (pageTitleEl) pageTitleEl.textContent = `${label} – Story Timetable`;
-  document.title = `${label} Story Timetable`;
+  if (pageTitleEl) pageTitleEl.textContent = `${label} – ${FMT.label} Timetable`;
+  document.title = `${label} ${FMT.label} Timetable`;
 
   const back = document.getElementById("backLink");
   back.href = `event.html?event=${encodeURIComponent(CURRENT_EVENT.id)}`;

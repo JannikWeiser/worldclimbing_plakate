@@ -25,9 +25,15 @@ here never touch it and vice versa.
 
 - GitHub: `JannikWeiser/worldclimbing_plakate`, branch `main`, GitHub
   Pages serving from `main` root (legacy Jekyll-build Pages, not Actions).
-- Live: https://jannikweiser.github.io/worldclimbing_plakate/ — no custom
-  domain set up for this one (deliberately skipped so far; ask before
-  adding one, see "Custom domain" note below if that changes).
+- Live: **https://postergenerator.comptools.cloud/** (custom domain, set up
+  2026-10-12). `https://jannikweiser.github.io/worldclimbing_plakate/`
+  now redirects there. Setup that was done: user created a DNS CNAME
+  `postergenerator.comptools.cloud` → `jannikweiser.github.io` (no path);
+  `CNAME` file in the repo root; `gh api -X PUT repos/JannikWeiser/worldclimbing_plakate/pages -f cname=postergenerator.comptools.cloud`,
+  waited for `https_certificate.state == approved` (~1 min this time), then
+  `-F https_enforced=true`. The sibling project uses
+  `plakatgenerator.comptools.cloud` (note the different spelling:
+  plakat vs. poster) - both coexist on the same GitHub account fine.
 - `gh repo create ... --push` sometimes gets blocked by an auto-mode
   safety classifier in this environment; if so, hand the exact command to
   the user to run themselves rather than retrying it yourself. Plain
@@ -374,9 +380,6 @@ canvas draws with `setTransform(k,…)` so preview (k=2) and export share
   `logo` field added per event in `events.js` plus a per-event asset.
 - **Event list is mostly past-dated** (see calendar note above) —
   cosmetic/content issue, not a code issue, until 2027 calendar exists.
-- **No custom domain** for this project (unlike the sibling project's
-  `plakatgenerator.comptools.cloud`) — intentional, ask before setting
-  one up.
 - English-only, no language switcher (removed on purpose per explicit
   request — don't re-add DE without being asked).
 

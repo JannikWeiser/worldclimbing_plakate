@@ -699,3 +699,8 @@ a.format-card:hover {
   margin-top: 12px;
   width: 100%;
 }
+
+.filter-bar[hidden],
+.filter-chip[hidden] {
+  display: none;
+}

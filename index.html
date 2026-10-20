@@ -66,7 +66,14 @@
       list.appendChild(a);
     });
 
+    // Filter-Chips nur fuer Disziplinen, die es in der Liste gibt; gibt es
+    // weniger als zwei, ist der Filter ueberfluessig und wird ganz versteckt.
+    const present = new Set(EVENTS.map((e) => e.discipline));
     const filterBar = document.getElementById("filterBar");
+    filterBar.querySelectorAll(".filter-chip").forEach((chip) => {
+      if (chip.dataset.filter !== "all") chip.hidden = !present.has(chip.dataset.filter);
+    });
+    if (present.size < 2) filterBar.hidden = true;
     filterBar.addEventListener("click", (evt) => {
       const btn = evt.target.closest(".filter-chip");
       if (!btn) return;

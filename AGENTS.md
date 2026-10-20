@@ -137,40 +137,40 @@ effectively a caps-only display font).
 ```
 
 - `id`: URL slug, e.g. `soure-youth-series-boulder` (city-series-discipline).
-  Referenced as `event.html?event=<id>` etc. **Old ids from the World Cup
-  list no longer exist**: `event.html` redirects to the list, the
-  generator pages silently fall back to the first event.
+  Referenced as `event.html?event=<id>` etc. **Ids of earlier lists no
+  longer exist**: `event.html` redirects to the list, the generator pages
+  silently fall back to the first event.
 - `series`: competition name without "World Climbing" and year, as on
-  worldclimbing.com/calendar ("Europe Youth Series", "Europe Series",
-  "Europe Championship", "Europe Youth Championship", "Europe Para
-  Championship", "European Para Championship"). Used by `eventLabel(e)` →
-  headings/page titles like "Europe Youth Series Soure – Boulder" and on
-  the list cards. (Replaced the hardcoded "<city> World Cup" label.)
-- `year`: shown on cards/event page; 2026 for all but Geneva (2027).
+  ifsc.results.info ("Europe Youth Series", "Europe Series", ...). Used by
+  `eventLabel(e)` → headings/page titles like "Europe Youth Series Soure –
+  Boulder" and on the list cards.
+- `year`: shown on cards/event page.
 - `discipline`: must be exactly `"boulder"`, `"lead"`, or `"speed"` — builds
   accents filenames and the coloured dots. A typo silently breaks colour.
 - `cityTitle`: what's baked into posters. **ASCII letters + spaces only**
   (the font has no digits/punctuation/diacritics): "St. Pölten" →
-  `"ST POLTEN"`, `city` keeps the proper spelling for HTML.
+  `"ST POLTEN"`; `city` keeps the proper spelling for HTML. Long names
+  (MEZZALOMBARDO, LIPTOVSKY MIKULAS) shrink automatically.
 - `dateLines`: two strings, e.g. `["April","18th - 19th"]` / `["June","13th"]`.
-- A stop with two disciplines = **two entries** (zilina-series-lead/-speed,
-  laval-championship-lead/-speed, imst-youth-series-lead/-speed).
-- `eventLabel(e)` lives in `events.js` and is used by all pages.
+- A stop with two disciplines = **two entries** (same city/dates).
+- `index.html` only shows discipline filter chips for disciplines that
+  occur in `EVENTS` and hides the filter bar if there are fewer than two.
 
-**Source and scope (decided 2026-10-20 at the user's request "nur
-Europäische Termine"):** worldclimbing.com/calendar with the page's own
-REGION filter = *europe* (read in the built-in browser; the page is
-JS-rendered). That yields the "World Climbing Europe …" competitions
-(20 in 2026 incl. the Youth Championship in Augsburg, plus 2027:
-European Para Championship Geneva). It deliberately EXCLUDES World
-Climbing Series/Para Series stops that are merely in Europe (Bern,
-Madrid, Prague, Innsbruck, Krakow, Chamonix, Koper, Innsbruck Para …)
-because the site files them under region "World" - ask the user if they
-should be included. The calendar has a youth/open AGE filter too (not
-used). All 2026 events are in the past as of 2026-10-20; only Geneva 2027
-is upcoming. Add new seasons by appending objects (nothing else hardcodes
-events). The previous World Cup list is in git history (before the commit
-"Switch event list to European calendar").
+**Current list = 2027, Europe only (decided 2026-10-20).** History: the
+list was first the 2026 World Cup/Series calendar (Wikipedia), then the 2026
+"Europe" calendar from worldclimbing.com (region filter = europe), and now
+- at the user's request - **season 2027 from https://ifsc.results.info**
+(SPA: open the page, season dropdown → 2027; list is lazy but short; read
+with `get_page_text` in the built-in browser) **restricted to Europe
+Series, Europe Youth Series, Europe Championships and Europe Youth
+Championships**. On 2026-10-20 that gave only 3 events (all Europe Youth
+Series: Lleida Apr 3-4 boulder, Soure Apr 17-18 boulder, Mezzalombardo
+Apr 24 speed). Deliberately excluded: World Climbing Series stops in
+Europe, all Para events (incl. European Para Championship Geneva 2027, which
+was in the previous list), non-European events. When Europe Series /
+Championships for 2027 are published, append them to `EVENTS` (re-check the
+source). Older lists live in git history (commits before "Use ifsc.results.info
+2027 Europe events").
 
 ## Mobile-first CSS (`style.css`)
 
@@ -392,10 +392,8 @@ canvas draws with `setTransform(k,…)` so preview (k=2) and export share
   by dropping the bottom two lines of event-specific subtext). If a
   future request wants event- or sponsor-specific logos, that needs a
   `logo` field added per event in `events.js` plus a per-event asset.
-- **Event list is almost entirely past-dated** (all 2026 Europe events
-  are over as of 2026-10-20; only Geneva 2027 is upcoming) - content issue,
-  not code. Re-check worldclimbing.com/calendar (season 2027) for new
-  European events.
+- **Event list is short** (3 events, 2027 Europe Youth Series only) because
+  the other Europe series/championships weren't published yet on 2026-10-20 - re-check ifsc.results.info and extend `events.js`.
 - English-only, no language switcher (removed on purpose per explicit
   request — don't re-add DE without being asked).
 

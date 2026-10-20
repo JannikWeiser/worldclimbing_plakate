@@ -10,13 +10,13 @@
   <div class="page">
     <header class="page__header">
       <h1>World Climbing Poster Generator</h1>
-      <p>Pick your World Cup below, then create your own personal story poster for it in a minute - right in your browser.</p>
+      <p>Pick your European event below, then create your own personal story poster for it in a minute - right in your browser.</p>
     </header>
 
     <section class="howto">
       <div class="howto__step">
         <span class="howto__num">1</span>
-        <p><strong>Pick your event</strong><span class="howto__desc">Choose the World Cup you're at from the list below.</span></p>
+        <p><strong>Pick your event</strong><span class="howto__desc">Choose the event you're at from the list below.</span></p>
       </div>
       <div class="howto__step">
         <span class="howto__num">2</span>
@@ -59,7 +59,8 @@
         <span class="event-card__dot event-card__dot--${event.discipline}"></span>
         <span class="event-card__info">
           <span class="event-card__city">${event.city}, ${event.country}</span>
-          <span class="event-card__meta">${DISCIPLINE_LABEL[event.discipline]} · ${event.dateLines[0]} ${event.dateLines[1]}</span>
+          <span class="event-card__meta">${event.series}</span>
+          <span class="event-card__meta">${DISCIPLINE_LABEL[event.discipline]} · ${event.dateLines[0]} ${event.dateLines[1]} ${event.year}</span>
         </span>
       `;
       list.appendChild(a);

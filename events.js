@@ -1,38 +1,62 @@
-// Shared event list used by both the event picker (index.html) and the
-// poster generator (generator.html). Each event drives which colour
+// Shared event list used by the event picker (index.html), the format page
+// (event.html) and all poster generators. Each event drives which colour
 // scheme, city title and dates get baked into the poster.
 //
-// discipline must be one of: "boulder", "lead", "speed"
-//   (this picks assets/images/accents-<discipline>.png)
-// cityTitle is what gets drawn on the poster itself - keep it ASCII only,
-//   the poster font has no accented characters.
-// dateLines is exactly two lines as they appear on the poster
-//   (e.g. ["June", "17th - 21st"]).
+// id          unique, used in ?event=<id>
+// series      competition name WITHOUT "World Climbing" and the year, as on
+//             worldclimbing.com/calendar (e.g. "Europe Youth Series")
+// city        display name (diacritics fine, used in HTML only)
+// country     shown on the poster (letters only - drawn in the poster font)
+// year        season year (cards show it)
+// discipline  one of "boulder" | "lead" | "speed"
+//             (this picks assets/images/accents-<discipline>.png etc.)
+//             Stops with two disciplines are two entries (e.g. zilina-lead
+//             + zilina-speed) so each gets its own colour scheme.
+// cityTitle   what gets drawn on the poster itself - ASCII letters and
+//             spaces ONLY: the poster font has no digits, punctuation or
+//             accented characters (so "St. Pölten" -> "ST POLTEN").
+// dateLines   exactly two lines as printed on the poster,
+//             e.g. ["June", "17th - 21st"] or ["June", "13th"].
 //
-// Source: 2026 World Climbing Series calendar (Wikipedia). Update this
-// list once the next season's calendar is announced.
+// Source: worldclimbing.com/calendar, filter REGION = europe (checked
+// 2026-10-20). That is the "World Climbing Europe ..." competitions
+// (Series, Youth Series, Championships, Para) - NOT the World Climbing
+// Series stops that merely take place in Europe (Bern, Madrid, Prague,
+// Innsbruck, Krakow, Chamonix, Koper ...): the site files those under
+// region "World". Update this list when the calendar changes.
 const EVENTS = [
-  { id: "keqiao-boulder", city: "Keqiao", country: "China", cityTitle: "KEQIAO", discipline: "boulder", dateLines: ["May", "1st - 3rd"] },
-  { id: "wujiang-lead", city: "Wujiang", country: "China", cityTitle: "WUJIANG", discipline: "lead", dateLines: ["May", "8th - 10th"] },
-  { id: "wujiang-speed", city: "Wujiang", country: "China", cityTitle: "WUJIANG", discipline: "speed", dateLines: ["May", "8th - 10th"] },
-  { id: "bern-boulder", city: "Bern", country: "Switzerland", cityTitle: "BERN", discipline: "boulder", dateLines: ["May", "22nd - 24th"] },
-  { id: "madrid-boulder", city: "Madrid", country: "Spain", cityTitle: "MADRID", discipline: "boulder", dateLines: ["May", "28th - 31st"] },
-  { id: "madrid-speed", city: "Madrid", country: "Spain", cityTitle: "MADRID", discipline: "speed", dateLines: ["May", "28th - 31st"] },
-  { id: "prague-boulder", city: "Prague", country: "Czechia", cityTitle: "PRAGUE", discipline: "boulder", dateLines: ["June", "3rd - 7th"] },
-  { id: "prague-lead", city: "Prague", country: "Czechia", cityTitle: "PRAGUE", discipline: "lead", dateLines: ["June", "3rd - 7th"] },
-  { id: "innsbruck-boulder", city: "Innsbruck", country: "Austria", cityTitle: "INNSBRUCK", discipline: "boulder", dateLines: ["June", "17th - 21st"] },
-  { id: "innsbruck-lead", city: "Innsbruck", country: "Austria", cityTitle: "INNSBRUCK", discipline: "lead", dateLines: ["June", "17th - 21st"] },
-  { id: "krakow-speed", city: "Kraków", country: "Poland", cityTitle: "KRAKOW", discipline: "speed", dateLines: ["July", "3rd - 5th"] },
-  { id: "chamonix-speed", city: "Chamonix", country: "France", cityTitle: "CHAMONIX", discipline: "speed", dateLines: ["July", "10th - 12th"] },
-  { id: "chamonix-lead", city: "Chamonix", country: "France", cityTitle: "CHAMONIX", discipline: "lead", dateLines: ["July", "10th - 12th"] },
-  { id: "koper-lead", city: "Koper", country: "Slovenia", cityTitle: "KOPER", discipline: "lead", dateLines: ["September", "4th - 5th"] },
-  { id: "guiyang-speed", city: "Guiyang", country: "China", cityTitle: "GUIYANG", discipline: "speed", dateLines: ["September", "11th - 13th"] },
-  { id: "chongqing-speed", city: "Chongqing", country: "China", cityTitle: "CHONGQING", discipline: "speed", dateLines: ["September", "18th - 20th"] },
-  { id: "saltlakecity-boulder", city: "Salt Lake City", country: "USA", cityTitle: "SALT LAKE CITY", discipline: "boulder", dateLines: ["October", "16th - 18th"] },
-  { id: "santiago-speed", city: "Santiago", country: "Chile", cityTitle: "SANTIAGO", discipline: "speed", dateLines: ["October", "23rd - 25th"] },
-  { id: "santiago-lead", city: "Santiago", country: "Chile", cityTitle: "SANTIAGO", discipline: "lead", dateLines: ["October", "23rd - 25th"] },
+  { id: "soure-youth-series-boulder", series: "Europe Youth Series", city: "Soure", country: "Portugal", year: 2026, cityTitle: "SOURE", discipline: "boulder", dateLines: ["April", "18th - 19th"] },
+  { id: "kaunas-series-boulder", series: "Europe Series", city: "Kaunas", country: "Lithuania", year: 2026, cityTitle: "KAUNAS", discipline: "boulder", dateLines: ["April", "25th - 26th"] },
+  { id: "graz-youth-series-boulder", series: "Europe Youth Series", city: "Graz", country: "Austria", year: 2026, cityTitle: "GRAZ", discipline: "boulder", dateLines: ["May", "9th - 10th"] },
+  { id: "liptovsky-mikulas-series-boulder", series: "Europe Series", city: "Liptovský Mikuláš", country: "Slovakia", year: 2026, cityTitle: "LIPTOVSKY MIKULAS", discipline: "boulder", dateLines: ["May", "16th - 17th"] },
+  { id: "sukoro-youth-championship-boulder", series: "Europe Youth Championship", city: "Sukoró", country: "Hungary", year: 2026, cityTitle: "SUKORO", discipline: "boulder", dateLines: ["June", "11th - 14th"] },
+  { id: "zakopane-youth-championship-speed", series: "Europe Youth Championship", city: "Zakopane", country: "Poland", year: 2026, cityTitle: "ZAKOPANE", discipline: "speed", dateLines: ["June", "13th"] },
+  { id: "zakopane-series-speed", series: "Europe Series", city: "Zakopane", country: "Poland", year: 2026, cityTitle: "ZAKOPANE", discipline: "speed", dateLines: ["June", "14th"] },
+  { id: "dornbirn-youth-series-lead", series: "Europe Youth Series", city: "Dornbirn", country: "Austria", year: 2026, cityTitle: "DORNBIRN", discipline: "lead", dateLines: ["July", "4th - 5th"] },
+  { id: "barcelona-championship-boulder", series: "Europe Championship", city: "Barcelona", country: "Spain", year: 2026, cityTitle: "BARCELONA", discipline: "boulder", dateLines: ["July", "17th - 19th"] },
+  { id: "barcelona-series-speed", series: "Europe Series", city: "Barcelona", country: "Spain", year: 2026, cityTitle: "BARCELONA", discipline: "speed", dateLines: ["July", "17th"] },
+  { id: "st-polten-youth-series-speed", series: "Europe Youth Series", city: "St. Pölten", country: "Austria", year: 2026, cityTitle: "ST POLTEN", discipline: "speed", dateLines: ["August", "1st"] },
+  { id: "st-polten-series-speed", series: "Europe Series", city: "St. Pölten", country: "Austria", year: 2026, cityTitle: "ST POLTEN", discipline: "speed", dateLines: ["August", "2nd"] },
+  { id: "zilina-series-lead", series: "Europe Series", city: "Žilina", country: "Slovakia", year: 2026, cityTitle: "ZILINA", discipline: "lead", dateLines: ["August", "7th - 9th"] },
+  { id: "zilina-series-speed", series: "Europe Series", city: "Žilina", country: "Slovakia", year: 2026, cityTitle: "ZILINA", discipline: "speed", dateLines: ["August", "7th - 9th"] },
+  { id: "ostermundigen-series-lead", series: "Europe Series", city: "Ostermundigen", country: "Switzerland", year: 2026, cityTitle: "OSTERMUNDIGEN", discipline: "lead", dateLines: ["August", "21st - 22nd"] },
+  { id: "laval-para-championship-lead", series: "Europe Para Championship", city: "Laval", country: "France", year: 2026, cityTitle: "LAVAL", discipline: "lead", dateLines: ["August", "28th - 29th"] },
+  { id: "laval-championship-lead", series: "Europe Championship", city: "Laval", country: "France", year: 2026, cityTitle: "LAVAL", discipline: "lead", dateLines: ["August", "29th - 30th"] },
+  { id: "laval-championship-speed", series: "Europe Championship", city: "Laval", country: "France", year: 2026, cityTitle: "LAVAL", discipline: "speed", dateLines: ["August", "29th - 30th"] },
+  { id: "imst-youth-series-lead", series: "Europe Youth Series", city: "Imst", country: "Austria", year: 2026, cityTitle: "IMST", discipline: "lead", dateLines: ["September", "4th - 6th"] },
+  { id: "imst-youth-series-speed", series: "Europe Youth Series", city: "Imst", country: "Austria", year: 2026, cityTitle: "IMST", discipline: "speed", dateLines: ["September", "4th - 6th"] },
+  { id: "augsburg-youth-championship-lead", series: "Europe Youth Championship", city: "Augsburg", country: "Germany", year: 2026, cityTitle: "AUGSBURG", discipline: "lead", dateLines: ["September", "19th - 20th"] },
+  { id: "leipzig-youth-series-speed", series: "Europe Youth Series", city: "Leipzig", country: "Germany", year: 2026, cityTitle: "LEIPZIG", discipline: "speed", dateLines: ["October", "3rd"] },
+  { id: "leipzig-series-speed", series: "Europe Series", city: "Leipzig", country: "Germany", year: 2026, cityTitle: "LEIPZIG", discipline: "speed", dateLines: ["October", "4th"] },
+  { id: "geneva-para-championship-lead", series: "European Para Championship", city: "Geneva", country: "Switzerland", year: 2027, cityTitle: "GENEVA", discipline: "lead", dateLines: ["August", "2nd - 4th"] },
 ];
 
 function getEventById(id) {
   return EVENTS.find((e) => e.id === id) || null;
+}
+
+// "Europe Youth Series Soure – Boulder" (headings / page titles)
+function eventLabel(e) {
+  const d = e.discipline[0].toUpperCase() + e.discipline.slice(1);
+  return `${e.series} ${e.city} – ${d}`;
 }

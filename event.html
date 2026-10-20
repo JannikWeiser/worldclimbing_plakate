@@ -26,8 +26,6 @@
 
   <script src="events.js"></script>
   <script>
-    const DISCIPLINE_LABEL = { boulder: "Boulder", lead: "Lead", speed: "Speed" };
-
     // Ohne oder mit unbekannter id zurueck zur Eventliste, statt ein
     // falsches Event zu zeigen.
     const eventId = new URLSearchParams(location.search).get("event");
@@ -35,11 +33,11 @@
     if (!selected) {
       location.replace("index.html");
     } else {
-      const label = `${selected.city} World Cup – ${DISCIPLINE_LABEL[selected.discipline]}`;
+      const label = eventLabel(selected);
       document.title = `${label} – Choose a format`;
       document.getElementById("eventTitle").textContent = label;
       document.getElementById("eventMeta").textContent =
-        `${selected.city}, ${selected.country} · ${selected.dateLines[0]} ${selected.dateLines[1]} – what would you like to create?`;
+        `${selected.city}, ${selected.country} · ${selected.dateLines[0]} ${selected.dateLines[1]} ${selected.year} – what would you like to create?`;
 
       const q = `?event=${encodeURIComponent(selected.id)}`;
       // href = null -> Karte ist deaktiviert ("Coming soon").

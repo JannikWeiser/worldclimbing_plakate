@@ -638,7 +638,7 @@ if (isInAppBrowser()) {
 }
 
 if (CURRENT_EVENT) {
-  const label = `${CURRENT_EVENT.city} World Cup – ${CURRENT_EVENT.discipline[0].toUpperCase()}${CURRENT_EVENT.discipline.slice(1)}`;
+  const label = eventLabel(CURRENT_EVENT);
   document.getElementById("pageTitle").textContent = `${label} – Event Poster`;
   document.title = `${label} Event Poster`;
   const back = document.getElementById("backLink");

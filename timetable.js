@@ -629,7 +629,7 @@ if (isInAppBrowser()) {
 
 if (CURRENT_EVENT) {
   const pageTitleEl = document.getElementById("pageTitle");
-  const label = `${CURRENT_EVENT.city} World Cup – ${CURRENT_EVENT.discipline[0].toUpperCase()}${CURRENT_EVENT.discipline.slice(1)}`;
+  const label = eventLabel(CURRENT_EVENT);
   if (pageTitleEl) pageTitleEl.textContent = `${label} – ${FMT.label} Timetable`;
   document.title = `${label} ${FMT.label} Timetable`;
 

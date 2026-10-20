@@ -6,8 +6,9 @@ or git history first.
 
 ## What this is
 
-A client-side (no backend) poster generator for World Climbing World Cup
-events. Visitor picks an event from a list → uploads a photo → gets a
+A client-side (no backend) poster generator for **European** World Climbing
+events (Europe Series / Youth Series / Championships / Para - see "Event
+data model"; until 2026-10-20 it listed the World Cup/Series calendar). Visitor picks an event from a list → uploads a photo → gets a
 1080×1920 Instagram-Story PNG with their photo masked into a branded
 template, in the event's discipline colour, with the right city/date baked
 in. Nothing is ever uploaded anywhere — the whole image is composited in
@@ -132,31 +133,44 @@ effectively a caps-only display font).
 ## Event data model (`events.js`)
 
 ```js
-{ id, city, country, cityTitle, discipline, dateLines }
+{ id, series, city, country, year, cityTitle, discipline, dateLines }
 ```
 
-- `id`: URL slug, e.g. `innsbruck-lead`. Referenced as `generator.html?event=<id>`.
-- `discipline`: must be exactly `"boulder"`, `"lead"`, or `"speed"` — this
-  is used to build the accents filename (`accents-${discipline}.png`) and
-  the CSS class for the coloured dot on the event card
-  (`event-card__dot--${discipline}`). A typo here silently breaks the
-  colour (image 404s → that layer just doesn't draw, rest of the poster
-  still renders).
-- `cityTitle`: what's baked into the poster canvas. **Must be ASCII** —
-  the poster font's glyph coverage for accented characters is unverified,
-  so e.g. Kraków is `"KRAKOW"` here even though the event list UI (plain
-  HTML, not canvas) shows `city: "Kraków"` correctly.
-- `dateLines`: exactly two strings, rendered as two lines on the poster.
-- One real-world event with multiple disciplines (e.g. Innsbruck has both
-  Boulder and Lead) becomes **two separate entries** with different
-  `id`/`discipline`, sharing the same city/dates.
+- `id`: URL slug, e.g. `soure-youth-series-boulder` (city-series-discipline).
+  Referenced as `event.html?event=<id>` etc. **Old ids from the World Cup
+  list no longer exist**: `event.html` redirects to the list, the
+  generator pages silently fall back to the first event.
+- `series`: competition name without "World Climbing" and year, as on
+  worldclimbing.com/calendar ("Europe Youth Series", "Europe Series",
+  "Europe Championship", "Europe Youth Championship", "Europe Para
+  Championship", "European Para Championship"). Used by `eventLabel(e)` →
+  headings/page titles like "Europe Youth Series Soure – Boulder" and on
+  the list cards. (Replaced the hardcoded "<city> World Cup" label.)
+- `year`: shown on cards/event page; 2026 for all but Geneva (2027).
+- `discipline`: must be exactly `"boulder"`, `"lead"`, or `"speed"` — builds
+  accents filenames and the coloured dots. A typo silently breaks colour.
+- `cityTitle`: what's baked into posters. **ASCII letters + spaces only**
+  (the font has no digits/punctuation/diacritics): "St. Pölten" →
+  `"ST POLTEN"`, `city` keeps the proper spelling for HTML.
+- `dateLines`: two strings, e.g. `["April","18th - 19th"]` / `["June","13th"]`.
+- A stop with two disciplines = **two entries** (zilina-series-lead/-speed,
+  laval-championship-lead/-speed, imst-youth-series-lead/-speed).
+- `eventLabel(e)` lives in `events.js` and is used by all pages.
 
-Current list is the real **2026** World Climbing Series calendar
-(sourced from Wikipedia in-session). By the time you're reading this,
-most or all of it is in the past — the 2027 calendar wasn't published as
-of this writing. **To add next season: just add more objects to the
-`EVENTS` array, following the same shape.** Nothing else needs to change
-(no other file hardcodes event data).
+**Source and scope (decided 2026-10-20 at the user's request "nur
+Europäische Termine"):** worldclimbing.com/calendar with the page's own
+REGION filter = *europe* (read in the built-in browser; the page is
+JS-rendered). That yields the "World Climbing Europe …" competitions
+(20 in 2026 incl. the Youth Championship in Augsburg, plus 2027:
+European Para Championship Geneva). It deliberately EXCLUDES World
+Climbing Series/Para Series stops that are merely in Europe (Bern,
+Madrid, Prague, Innsbruck, Krakow, Chamonix, Koper, Innsbruck Para …)
+because the site files them under region "World" - ask the user if they
+should be included. The calendar has a youth/open AGE filter too (not
+used). All 2026 events are in the past as of 2026-10-20; only Geneva 2027
+is upcoming. Add new seasons by appending objects (nothing else hardcodes
+events). The previous World Cup list is in git history (before the commit
+"Switch event list to European calendar").
 
 ## Mobile-first CSS (`style.css`)
 
@@ -187,7 +201,7 @@ Other mobile-specific pieces:
 - `.filter-bar` (All/Boulder/Lead/Speed chips) on `index.html` — pure
   client-side filtering by toggling `hidden` on `.event-card` elements
   based on `data-discipline`. Added specifically so mobile users don't
-  have to scroll through all ~18 events to find their discipline.
+  have to scroll through all ~24 events to find their discipline.
 
 ## Instagram in-app-browser handling
 
@@ -378,8 +392,10 @@ canvas draws with `setTransform(k,…)` so preview (k=2) and export share
   by dropping the bottom two lines of event-specific subtext). If a
   future request wants event- or sponsor-specific logos, that needs a
   `logo` field added per event in `events.js` plus a per-event asset.
-- **Event list is mostly past-dated** (see calendar note above) —
-  cosmetic/content issue, not a code issue, until 2027 calendar exists.
+- **Event list is almost entirely past-dated** (all 2026 Europe events
+  are over as of 2026-10-20; only Geneva 2027 is upcoming) - content issue,
+  not code. Re-check worldclimbing.com/calendar (season 2027) for new
+  European events.
 - English-only, no language switcher (removed on purpose per explicit
   request — don't re-add DE without being asked).
 

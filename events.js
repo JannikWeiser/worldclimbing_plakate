@@ -19,24 +19,18 @@
 //             e.g. ["June", "17th - 21st"] or ["June", "13th"].
 //
 // Source: ifsc.results.info (season 2027 selected, read 2026-10-20).
-// Scope requested by the user: Europe Series, Europe Youth Series, Europe
-// Championships and Europe Youth Championships PLUS Para events in Europe
-// (Para Series Manchester / Innsbruck / Catania / Toulouse, European Para
-// Championship Geneva, World Para Championship Brno). As of the source
-// date the only non-Para events published were three Europe Youth Series
-// stops - add Europe Series / Championships here when they appear.
-// Not included: World Climbing Series stops in Europe, non-European events
-// (incl. Para Series Los Angeles). Older lists are in git history.
+// Rule from the user: only events FOR Europe (European competitions:
+// Europe Series, Europe Youth Series, Europe Championships, Europe Youth
+// Championships, European Para Championship) - NOT events that merely take
+// place in Europe (World Climbing Series / Para Series stops, World
+// Championships such as Brno). As of the source date that is three Europe
+// Youth Series stops + the European Para Championship Geneva; add Europe
+// Series / Championships here when they appear. Older lists are in git history.
 const EVENTS = [
   { id: "lleida-youth-series-boulder", series: "Europe Youth Series", city: "Lleida", country: "Spain", year: 2027, cityTitle: "LLEIDA", discipline: "boulder", dateLines: ["April", "3rd - 4th"] },
   { id: "soure-youth-series-boulder", series: "Europe Youth Series", city: "Soure", country: "Portugal", year: 2027, cityTitle: "SOURE", discipline: "boulder", dateLines: ["April", "17th - 18th"] },
   { id: "mezzalombardo-youth-series-speed", series: "Europe Youth Series", city: "Mezzalombardo", country: "Italy", year: 2027, cityTitle: "MEZZALOMBARDO", discipline: "speed", dateLines: ["April", "24th"] },
-  { id: "manchester-para-series-lead", series: "Para Series", city: "Manchester", country: "Great Britain", year: 2027, cityTitle: "MANCHESTER", discipline: "lead", dateLines: ["June", "2nd - 3rd"] },
-  { id: "innsbruck-para-series-lead", series: "Para Series", city: "Innsbruck", country: "Austria", year: 2027, cityTitle: "INNSBRUCK", discipline: "lead", dateLines: ["June", "7th - 8th"] },
   { id: "geneva-para-championship-lead", series: "European Para Championship", city: "Geneva", country: "Switzerland", year: 2027, cityTitle: "GENEVA", discipline: "lead", dateLines: ["August", "2nd - 4th"] },
-  { id: "brno-para-championship-lead", series: "Para Championship", city: "Brno", country: "Czechia", year: 2027, cityTitle: "BRNO", discipline: "lead", dateLines: ["August", "13th - 21st"] },
-  { id: "catania-para-series-lead", series: "Para Series", city: "Catania", country: "Italy", year: 2027, cityTitle: "CATANIA", discipline: "lead", dateLines: ["October", "2nd - 3rd"] },
-  { id: "toulouse-para-series-lead", series: "Para Series", city: "Toulouse", country: "France", year: 2027, cityTitle: "TOULOUSE", discipline: "lead", dateLines: ["October", "29th - 31st"] },
 ];
 
 function getEventById(id) {

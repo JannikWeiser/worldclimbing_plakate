@@ -156,25 +156,26 @@ effectively a caps-only display font).
 - `index.html` only shows discipline filter chips for disciplines that
   occur in `EVENTS` and hides the filter bar if there are fewer than two.
 
-**Current list = 2027, Europe + Para (decided 2026-10-20).** History: the
-list was first the 2026 World Cup/Series calendar (Wikipedia), then the 2026
-"Europe" calendar from worldclimbing.com (region filter = europe), then -
-at the user's request - **season 2027 from https://ifsc.results.info**
-(SPA: open the page, season dropdown → 2027; read with `get_page_text` in
-the built-in browser) restricted to Europe Series, Europe Youth Series,
-Europe Championships and Europe Youth Championships, and finally **Para
-events in Europe were added** ("Nimm auch die Para-Events mit rein").
-Content on 2026-10-20 (9 entries): Europe Youth Series Lleida (Apr 3-4,
-boulder), Soure (Apr 17-18, boulder), Mezzalombardo (Apr 24, speed); Para
-Series Manchester (Jun 2-3), Innsbruck (Jun 7-8), Catania (Oct 2-3),
-Toulouse (Oct 29-31); European Para Championship Geneva (Aug 2-4); World
-Para Championship Brno (Aug 13-21) - all Para = lead. **Judgement calls to
-revisit if the user objects:** Brno is a *World* Para Championship (included
-because it is in Europe and Para); Para Series Los Angeles 2027 is excluded
-(not Europe); World Climbing Series stops in Europe and the Brno World
-Championship (open) are excluded. No Europe Series / Championships were
-published yet - append them to `EVENTS` when they appear (re-check the
-source). Older lists live in git history.
+**Current list = 2027, events FOR Europe only (decided 2026-10-20).**
+History: the list was first the 2026 World Cup/Series calendar (Wikipedia),
+then the 2026 "Europe" calendar from worldclimbing.com (region filter =
+europe), then - at the user's request - **season 2027 from
+https://ifsc.results.info** (SPA: open the page, season dropdown → 2027;
+read with `get_page_text` in the built-in browser), restricted to
+Europe Series, Europe Youth Series, Europe Championships and Europe Youth
+Championships. The user then asked for Para events too, and afterwards:
+"Brno bitte rausnehmen. Nur Events für Europa und nicht in Europa" - I read
+this as **only European competitions (branded "Europe …"/"European …"),
+not events that merely take place in Europe**. Consequences (my
+interpretation - the user can reverse it): removed World Para Championship
+Brno AND the World Climbing **Para Series** stops in Europe (Manchester Jun
+2-3, Innsbruck Jun 7-8, Catania Oct 2-3, Toulouse Oct 29-31), which had
+been added one step earlier (see git history, commit "Add 2027 Para events
+in Europe"). Remaining (4 entries): Europe Youth Series Lleida (Apr 3-4,
+boulder), Soure (Apr 17-18, boulder), Mezzalombardo (Apr 24, speed) and
+the European Para Championship Geneva (Aug 2-4, lead). No Europe Series /
+Championships were published yet - append them to `EVENTS` when they appear
+(re-check the source).
 
 ## Mobile-first CSS (`style.css`)
 
@@ -396,7 +397,7 @@ canvas draws with `setTransform(k,…)` so preview (k=2) and export share
   by dropping the bottom two lines of event-specific subtext). If a
   future request wants event- or sponsor-specific logos, that needs a
   `logo` field added per event in `events.js` plus a per-event asset.
-- **Event list is short** (9 events) because Europe Series / Championships for 2027 weren't published on 2026-10-20 - re-check ifsc.results.info and extend `events.js`.
+- **Event list is short** (4 events) because Europe Series / Championships for 2027 weren't published on 2026-10-20 - re-check ifsc.results.info and extend `events.js`.
 - English-only, no language switcher (removed on purpose per explicit
   request — don't re-add DE without being asked).
 

@@ -156,26 +156,37 @@ effectively a caps-only display font).
 - `index.html` only shows discipline filter chips for disciplines that
   occur in `EVENTS` and hides the filter bar if there are fewer than two.
 
-**Current list = 2027, events FOR Europe only (decided 2026-10-20).**
-History: the list was first the 2026 World Cup/Series calendar (Wikipedia),
-then the 2026 "Europe" calendar from worldclimbing.com (region filter =
-europe), then - at the user's request - **season 2027 from
-https://ifsc.results.info** (SPA: open the page, season dropdown → 2027;
-read with `get_page_text` in the built-in browser), restricted to
-Europe Series, Europe Youth Series, Europe Championships and Europe Youth
-Championships. The user then asked for Para events too, and afterwards:
-"Brno bitte rausnehmen. Nur Events für Europa und nicht in Europa" - I read
-this as **only European competitions (branded "Europe …"/"European …"),
-not events that merely take place in Europe**. Consequences (my
-interpretation - the user can reverse it): removed World Para Championship
-Brno AND the World Climbing **Para Series** stops in Europe (Manchester Jun
-2-3, Innsbruck Jun 7-8, Catania Oct 2-3, Toulouse Oct 29-31), which had
-been added one step earlier (see git history, commit "Add 2027 Para events
-in Europe"). Remaining (4 entries): Europe Youth Series Lleida (Apr 3-4,
-boulder), Soure (Apr 17-18, boulder), Mezzalombardo (Apr 24, speed) and
-the European Para Championship Geneva (Aug 2-4, lead). No Europe Series /
-Championships were published yet - append them to `EVENTS` when they appear
-(re-check the source).
+**Current list = official World Climbing Europe 2027 calendar (25 events,
+set 2026-10-27).** Source, given by the user: the news post "World Climbing
+Europe releases 2027 calendar"
+(https://www.worldclimbing.com/news/world-climbing-europe-releases-2027-calendar,
+published 2026-10-27; a table of event / dates / location / discipline,
+readable with `get_page_text` in the built-in browser). It announces 26
+events: Europe Youth Series, Europe Series, Europe Youth Championships (Lead
+Augsburg Sep 25-26, Speed Leipzig Oct 2-3, **Boulder still unconfirmed -
+not in the list; add it when dated**) and the Europe Para Championship
+Geneva (Aug 2-4). History of earlier lists (all in git): 2026 World Cup
+calendar (Wikipedia) → 2026 Europe calendar (worldclimbing.com region
+filter) → ifsc.results.info 2027 with only 3 Youth Series + Geneva (the
+user first limited scope to "events for Europe", removing Para Series/Brno;
+that restriction is superseded by the official list).
+
+Judgement calls when transcribing (told to the user):
+- Table rows like "24 - April" / "25 - April" / "29 - May" / "7 - Aug" /
+  "25 - Sep" were read as **single days** (matches ifsc.results.info for
+  Mezzalombardo Apr 24).
+- Cities copied as published: **"Liptovský"** (not "Liptovský Mikuláš", the
+  2026 name of the same venue?) and **"Vendespace"** (a venue name, not a
+  city; presumably Mouilleron-le-Captif/Vendée - unverified);
+  "Toulouse/ Tournefeuille" shown as Toulouse.
+- "Bytom: Speed / Speed Relay" → discipline `speed`.
+- Zilina has separate Speed (Aug 7) and Lead (Aug 7-8) rows.
+- Series names use the table wording: "Europe Para Championship" (the
+  earlier list said "European Para Championship"), "Europe Youth
+  Championship" (table: "Youth Championship").
+- Same city/date/discipline pairs exist for Youth Series vs Series
+  (Mezzalombardo, Duisburg, Toulouse); posters only print the city, the
+  series only shows in headings/cards.
 
 ## Mobile-first CSS (`style.css`)
 
@@ -397,7 +408,7 @@ canvas draws with `setTransform(k,…)` so preview (k=2) and export share
   by dropping the bottom two lines of event-specific subtext). If a
   future request wants event- or sponsor-specific logos, that needs a
   `logo` field added per event in `events.js` plus a per-event asset.
-- **Event list is short** (4 events) because Europe Series / Championships for 2027 weren't published on 2026-10-20 - re-check ifsc.results.info and extend `events.js`.
+- **Boulder Europe Youth Championship 2027** is not dated yet (see event data model) - add when announced. Re-check the news post for corrections ("subject to change").
 - English-only, no language switcher (removed on purpose per explicit
   request — don't re-add DE without being asked).
 

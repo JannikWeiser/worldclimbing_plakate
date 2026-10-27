@@ -156,7 +156,7 @@ effectively a caps-only display font).
 - `index.html` has **two combinable filter rows (AND)**: Series (chips built
   from the distinct `series` values, order Europe Series / Youth Series /
   Youth Championship / Para Championship) and Discipline (Boulder / Lead /
-  Speed). Chips only exist for values present in `EVENTS`; a row with fewer
+  Speed). The Para chip is labelled just **"Para"** (user request). Chips only exist for values present in `EVENTS`; a row with fewer
   than two values is hidden; a counter line shows "Showing X of N events"
   or "No events match these filters.". Cards carry `data-series` and
   `data-discipline`; new series names are picked up automatically (they sort
@@ -193,6 +193,16 @@ Judgement calls when transcribing (told to the user):
 - Same city/date/discipline pairs exist for Youth Series vs Series
   (Mezzalombardo, Duisburg, Toulouse); posters only print the city, the
   series only shows in headings/cards.
+
+## Cache busting (IMPORTANT when deploying)
+
+GitHub Pages serves every file with `cache-control: max-age=600`, and
+browsers can keep an old `events.js` next to a new `index.html` (happened on
+2026-10-27: the user saw the old 4-event list with the new filter UI). All
+local `<script src>` / stylesheet links in the HTML pages therefore carry a
+`?v=<timestamp>` token. **Before committing any change to a .js/.css file run
+`sh tools/bump-version.sh`** (rewrites the token in all `*.html`). HTML pages
+themselves can still be stale for up to 10 minutes; that's acceptable.
 
 ## Mobile-first CSS (`style.css`)
 

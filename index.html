@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>World Climbing Poster Generator</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20261027141200">
 </head>
 <body>
   <div class="page">
@@ -49,7 +49,7 @@
     </footer>
   </div>
 
-  <script src="events.js"></script>
+  <script src="events.js?v=20261027141200"></script>
   <script>
     const DISCIPLINE_LABEL = { boulder: "Boulder", lead: "Lead", speed: "Speed" };
 
@@ -103,6 +103,11 @@
           : `Showing ${shown} of ${EVENTS.length} events`;
     }
 
+    function seriesChipLabel(s) {
+      if (/Para/.test(s)) return "Para";
+      return s === "Europe Series" ? s : s.replace(/^Europe /, "");
+    }
+
     function buildFilter(groupId, barId, key, values, labelFor) {
       const group = document.getElementById(groupId);
       const bar = document.getElementById(barId);
@@ -127,9 +132,10 @@
       });
     }
 
-    // "Europe Youth Series" -> "Youth Series"; plain "Europe Series" keeps its
+    // "Europe Youth Series" -> "Youth Series"; "Europe Para Championship" -> "Para";
+    // plain "Europe Series" keeps its
     // name so the chip isn't just "Series" under a "Series" heading
-    buildFilter("seriesGroup", "seriesBar", "series", seriesList, (s) => (s === "Europe Series" ? s : s.replace(/^Europe /, "")));
+    buildFilter("seriesGroup", "seriesBar", "series", seriesList, seriesChipLabel);
     buildFilter("disciplineGroup", "disciplineBar", "discipline", disciplineList, (d) => DISCIPLINE_LABEL[d]);
     if (seriesList.length < 2 && disciplineList.length < 2) document.getElementById("filters").hidden = true;
   </script>

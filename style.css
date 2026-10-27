@@ -704,3 +704,45 @@ a.format-card:hover {
 .filter-chip[hidden] {
   display: none;
 }
+
+/* Two filter rows (series + discipline) on the event list */
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.filters .filter-bar {
+  margin-bottom: 0;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-group[hidden],
+.filters[hidden] {
+  display: none;
+}
+
+.filter-group__label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #777;
+}
+
+.filter-count {
+  margin: 0;
+  font-size: 13px;
+  color: #777;
+  min-height: 0;
+}
+
+.filter-count:empty {
+  display: none;
+}

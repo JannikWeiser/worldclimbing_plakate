@@ -153,8 +153,14 @@ effectively a caps-only display font).
   (MEZZALOMBARDO, LIPTOVSKY MIKULAS) shrink automatically.
 - `dateLines`: two strings, e.g. `["April","18th - 19th"]` / `["June","13th"]`.
 - A stop with two disciplines = **two entries** (same city/dates).
-- `index.html` only shows discipline filter chips for disciplines that
-  occur in `EVENTS` and hides the filter bar if there are fewer than two.
+- `index.html` has **two combinable filter rows (AND)**: Series (chips built
+  from the distinct `series` values, order Europe Series / Youth Series /
+  Youth Championship / Para Championship) and Discipline (Boulder / Lead /
+  Speed). Chips only exist for values present in `EVENTS`; a row with fewer
+  than two values is hidden; a counter line shows "Showing X of N events"
+  or "No events match these filters.". Cards carry `data-series` and
+  `data-discipline`; new series names are picked up automatically (they sort
+  after the known four).
 
 **Current list = official World Climbing Europe 2027 calendar (25 events,
 set 2026-10-27).** Source, given by the user: the news post "World Climbing

@@ -28,11 +28,16 @@
       </div>
     </section>
 
-    <div class="filter-bar" id="filterBar" role="group" aria-label="Filter by discipline">
-      <button type="button" class="filter-chip is-active" data-filter="all">All</button>
-      <button type="button" class="filter-chip" data-filter="boulder">Boulder</button>
-      <button type="button" class="filter-chip" data-filter="lead">Lead</button>
-      <button type="button" class="filter-chip" data-filter="speed">Speed</button>
+    <div class="filters" id="filters">
+      <div class="filter-group" id="seriesGroup">
+        <span class="filter-group__label" id="seriesLabel">Series</span>
+        <div class="filter-bar" id="seriesBar" role="group" aria-labelledby="seriesLabel"></div>
+      </div>
+      <div class="filter-group" id="disciplineGroup">
+        <span class="filter-group__label" id="disciplineLabel">Discipline</span>
+        <div class="filter-bar" id="disciplineBar" role="group" aria-labelledby="disciplineLabel"></div>
+      </div>
+      <p class="filter-count" id="filterCount" aria-live="polite"></p>
     </div>
 
     <section class="event-list" id="eventList" aria-label="Choose your event"></section>
@@ -54,6 +59,7 @@
       a.className = "event-card";
       a.href = `event.html?event=${encodeURIComponent(event.id)}`;
       a.dataset.discipline = event.discipline;
+      a.dataset.series = event.series;
 
       a.innerHTML = `
         <span class="event-card__dot event-card__dot--${event.discipline}"></span>
@@ -66,26 +72,66 @@
       list.appendChild(a);
     });
 
-    // Filter-Chips nur fuer Disziplinen, die es in der Liste gibt; gibt es
-    // weniger als zwei, ist der Filter ueberfluessig und wird ganz versteckt.
-    const present = new Set(EVENTS.map((e) => e.discipline));
-    const filterBar = document.getElementById("filterBar");
-    filterBar.querySelectorAll(".filter-chip").forEach((chip) => {
-      if (chip.dataset.filter !== "all") chip.hidden = !present.has(chip.dataset.filter);
+    // ---- Filter: Serie + Disziplin (beide kombinierbar, UND-verknuepft) ----
+    // Chips werden aus EVENTS erzeugt, es gibt also nur Chips fuer Serien und
+    // Disziplinen, die in der Liste vorkommen. Gibt es in einer Gruppe weniger
+    // als zwei Werte, ist der Filter ueberfluessig und wird versteckt.
+    const SERIES_ORDER = ["Europe Series", "Europe Youth Series", "Europe Youth Championship", "Europe Para Championship"];
+    const seriesList = [...new Set(EVENTS.map((e) => e.series))].sort((a, b) => {
+      const ia = SERIES_ORDER.indexOf(a), ib = SERIES_ORDER.indexOf(b);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
     });
-    if (present.size < 2) filterBar.hidden = true;
-    filterBar.addEventListener("click", (evt) => {
-      const btn = evt.target.closest(".filter-chip");
-      if (!btn) return;
+    const disciplineList = ["boulder", "lead", "speed"].filter((d) => EVENTS.some((e) => e.discipline === d));
 
-      filterBar.querySelectorAll(".filter-chip").forEach((c) => c.classList.remove("is-active"));
-      btn.classList.add("is-active");
+    const filterState = { series: "all", discipline: "all" };
+    const countEl = document.getElementById("filterCount");
 
-      const filter = btn.dataset.filter;
+    function applyFilters() {
+      let shown = 0;
       list.querySelectorAll(".event-card").forEach((card) => {
-        card.hidden = filter !== "all" && card.dataset.discipline !== filter;
+        const ok =
+          (filterState.series === "all" || card.dataset.series === filterState.series) &&
+          (filterState.discipline === "all" || card.dataset.discipline === filterState.discipline);
+        card.hidden = !ok;
+        if (ok) shown++;
       });
-    });
+      const filtered = filterState.series !== "all" || filterState.discipline !== "all";
+      countEl.textContent = !filtered
+        ? ""
+        : shown === 0
+          ? "No events match these filters."
+          : `Showing ${shown} of ${EVENTS.length} events`;
+    }
+
+    function buildFilter(groupId, barId, key, values, labelFor) {
+      const group = document.getElementById(groupId);
+      const bar = document.getElementById(barId);
+      if (values.length < 2) {
+        group.hidden = true;
+        return;
+      }
+      [["all", "All"], ...values.map((v) => [v, labelFor(v)])].forEach(([value, label]) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "filter-chip" + (value === "all" ? " is-active" : "");
+        btn.dataset.value = value;
+        btn.textContent = label;
+        bar.appendChild(btn);
+      });
+      bar.addEventListener("click", (evt) => {
+        const btn = evt.target.closest(".filter-chip");
+        if (!btn) return;
+        bar.querySelectorAll(".filter-chip").forEach((c) => c.classList.toggle("is-active", c === btn));
+        filterState[key] = btn.dataset.value;
+        applyFilters();
+      });
+    }
+
+    // "Europe Youth Series" -> "Youth Series"; plain "Europe Series" keeps its
+    // name so the chip isn't just "Series" under a "Series" heading
+    buildFilter("seriesGroup", "seriesBar", "series", seriesList, (s) => (s === "Europe Series" ? s : s.replace(/^Europe /, "")));
+    buildFilter("disciplineGroup", "disciplineBar", "discipline", disciplineList, (d) => DISCIPLINE_LABEL[d]);
+    if (seriesList.length < 2 && disciplineList.length < 2) document.getElementById("filters").hidden = true;
   </script>
 </body>
 </html>

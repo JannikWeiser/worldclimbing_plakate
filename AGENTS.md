@@ -153,14 +153,15 @@ effectively a caps-only display font).
   (MEZZALOMBARDO, LIPTOVSKY MIKULAS) shrink automatically.
 - `dateLines`: two strings, e.g. `["April","18th - 19th"]` / `["June","13th"]`.
 - A stop with two disciplines = **two entries** (same city/dates).
-- `index.html` has **two combinable filter rows (AND)**: Series (chips built
-  from the distinct `series` values, order Europe Series / Youth Series /
-  Youth Championship / Para Championship) and Discipline (Boulder / Lead /
-  Speed). The Para chip is labelled just **"Para"** (user request). Chips only exist for values present in `EVENTS`; a row with fewer
-  than two values is hidden; a counter line shows "Showing X of N events"
-  or "No events match these filters.". Cards carry `data-series` and
-  `data-discipline`; new series names are picked up automatically (they sort
-  after the known four).
+- `index.html` has **two combinable filter rows (AND)**: Series and
+  Discipline (Boulder / Lead / Speed). The Series row uses *groups*
+  (`seriesGroup()`): "Europe Series", "Europe Youth Series" (= Youth Series
+  **and** Youth Championship merged, user request 2026-10-27) and "Europe
+  Para" (the Para Championship); cards still show the exact competition
+  name. Chips only exist for groups/disciplines present in `EVENTS`; a row
+  with fewer than two values is hidden; a counter shows "Showing X of N
+  events" or "No events match these filters." Cards carry `data-series`
+  (the group) and `data-discipline`.
 
 **Current list = official World Climbing Europe 2027 calendar (25 events,
 set 2026-10-27).** Source, given by the user: the news post "World Climbing
@@ -193,6 +194,27 @@ Judgement calls when transcribing (told to the user):
 - Same city/date/discipline pairs exist for Youth Series vs Series
   (Mezzalombardo, Duisburg, Toulouse); posters only print the city, the
   series only shows in headings/cards.
+
+## Loading performance (changed 2026-10-27, user: "Grafik lädt sehr lange")
+
+Before: the story page pulled ~1.4 MB of PNGs and then loaded the fonts
+only AFTER all images (sequential), and drew nothing until everything was
+there. Now:
+- All graphics are **WebP** (`assets/images/*.webp`): lossless for flat
+  assets (bg, masks, logo), lossy `-q 85 -alpha_q 60` for the grunge textures
+  (accents, chalk; PSNR ~42-47 dB, visually identical). Story page ≈ 370 KB
+  total (was ≈ 1.45 MB), post ≈ 240 KB. The original PNGs are kept in
+  `assets/source-png/` (NOT loaded by the site) so assets can be re-encoded:
+  `cwebp -q 85 -alpha_q 60 -m 6 in.png -o out.webp` (textures) or
+  `cwebp -lossless -z 9 ...` (flat). New/changed assets must be .webp.
+- `init()` in app.js/post.js/timetable.js starts every image **and** both
+  fonts in parallel and calls `render()` as each arrives; text is only drawn
+  once `fontsReady` (avoids a fallback-font flash). eventposter.js loads
+  logo + fonts in parallel.
+- Fonts are `<link rel="preload">`ed in the four generator pages.
+Not done (ideas): downscaling huge uploaded photos once on upload (would
+speed up dragging/zoom on phones; keep ≥ ~4000 px for the A3 poster),
+service worker caching.
 
 ## Cache busting (IMPORTANT when deploying)
 

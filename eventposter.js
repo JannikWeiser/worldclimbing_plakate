@@ -616,19 +616,21 @@ shareBtn.addEventListener("click", async () => {
 });
 
 // ---- Init ----
-async function init() {
-  assets.logo = await loadImage("assets/images/logo-generic.png");
+function init() {
+  // Logo und Schriften gleichzeitig laden (vorher nacheinander) und neu
+  // zeichnen, sobald etwas da ist.
+  loadImage("assets/images/logo-generic.webp").then((img) => {
+    assets.logo = img;
+    render();
+  });
 
-  try {
-    const [boldFace, monoFace] = await Promise.all([
-      new FontFace(FONT_BOLD, `url(assets/fonts/WorldClimbing-Bold.otf)`).load(),
-      new FontFace(FONT_MONO, `url(assets/fonts/AntarcticanMono-Book.ttf)`).load(),
-    ]);
-    document.fonts.add(boldFace);
-    document.fonts.add(monoFace);
-  } catch (e) {
-    console.warn("Font konnte nicht geladen werden, Fallback wird genutzt.", e);
-  }
+  Promise.all([
+    new FontFace(FONT_BOLD, `url(assets/fonts/WorldClimbing-Bold.otf)`).load(),
+    new FontFace(FONT_MONO, `url(assets/fonts/AntarcticanMono-Book.ttf)`).load(),
+  ])
+    .then((faces) => faces.forEach((f) => document.fonts.add(f)))
+    .catch((err) => console.warn("Font konnte nicht geladen werden, Fallback wird genutzt.", err))
+    .finally(render);
 
   render();
 }

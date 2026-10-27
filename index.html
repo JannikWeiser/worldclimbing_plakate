@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>World Climbing Poster Generator</title>
-<link rel="stylesheet" href="style.css?v=20261027141200">
+<link rel="stylesheet" href="style.css?v=20261027141911">
 </head>
 <body>
   <div class="page">
@@ -49,9 +49,18 @@
     </footer>
   </div>
 
-  <script src="events.js?v=20261027141200"></script>
+  <script src="events.js?v=20261027141911"></script>
   <script>
     const DISCIPLINE_LABEL = { boulder: "Boulder", lead: "Lead", speed: "Speed" };
+
+    // Filtergruppen fuer die Serie: Youth Series + Youth Championship sind
+    // zusammengefasst, Para bekommt einen eigenen Chip. Die Karten zeigen
+    // weiterhin den genauen Wettbewerbsnamen.
+    function seriesGroup(series) {
+      if (/Para/.test(series)) return "Europe Para";
+      if (/Youth/.test(series)) return "Europe Youth Series";
+      return series; // "Europe Series"
+    }
 
     const list = document.getElementById("eventList");
     EVENTS.forEach((event) => {
@@ -59,7 +68,7 @@
       a.className = "event-card";
       a.href = `event.html?event=${encodeURIComponent(event.id)}`;
       a.dataset.discipline = event.discipline;
-      a.dataset.series = event.series;
+      a.dataset.series = seriesGroup(event.series);
 
       a.innerHTML = `
         <span class="event-card__dot event-card__dot--${event.discipline}"></span>
@@ -76,8 +85,8 @@
     // Chips werden aus EVENTS erzeugt, es gibt also nur Chips fuer Serien und
     // Disziplinen, die in der Liste vorkommen. Gibt es in einer Gruppe weniger
     // als zwei Werte, ist der Filter ueberfluessig und wird versteckt.
-    const SERIES_ORDER = ["Europe Series", "Europe Youth Series", "Europe Youth Championship", "Europe Para Championship"];
-    const seriesList = [...new Set(EVENTS.map((e) => e.series))].sort((a, b) => {
+    const SERIES_ORDER = ["Europe Series", "Europe Youth Series", "Europe Para"];
+    const seriesList = [...new Set(EVENTS.map((e) => seriesGroup(e.series)))].sort((a, b) => {
       const ia = SERIES_ORDER.indexOf(a), ib = SERIES_ORDER.indexOf(b);
       return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
     });
@@ -103,9 +112,28 @@
           : `Showing ${shown} of ${EVENTS.length} events`;
     }
 
-    function seriesChipLabel(s) {
-      if (/Para/.test(s)) return "Para";
-      return s === "Europe Series" ? s : s.replace(/^Europe /, "");
+    function buildFilter(groupId, barId, key, values, labelFor) {
+      const group = document.getElementById(groupId);
+      const bar = document.getElementById(barId);
+      if (values.length < 2) {
+        group.hidden = true;
+        return;
+      }
+      [["all", "All"], ...values.map((v) => [v, labelFor(v)])].forEach(([value, label]) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "filter-chip" + (value === "all" ? " is-active" : "");
+        btn.dataset.value = value;
+        btn.textContent = label;
+        bar.appendChild(btn);
+      });
+      bar.addEventListener("click", (evt) => {
+        const btn = evt.target.closest(".filter-chip");
+        if (!btn) return;
+        bar.querySelectorAll(".filter-chip").forEach((c) => c.classList.toggle("is-active", c === btn));
+        filterState[key] = btn.dataset.value;
+        applyFilters();
+      });
     }
 
     function buildFilter(groupId, barId, key, values, labelFor) {
@@ -135,7 +163,7 @@
     // "Europe Youth Series" -> "Youth Series"; "Europe Para Championship" -> "Para";
     // plain "Europe Series" keeps its
     // name so the chip isn't just "Series" under a "Series" heading
-    buildFilter("seriesGroup", "seriesBar", "series", seriesList, seriesChipLabel);
+    buildFilter("seriesGroup", "seriesBar", "series", seriesList, (s) => s);
     buildFilter("disciplineGroup", "disciplineBar", "discipline", disciplineList, (d) => DISCIPLINE_LABEL[d]);
     if (seriesList.length < 2 && disciplineList.length < 2) document.getElementById("filters").hidden = true;
   </script>

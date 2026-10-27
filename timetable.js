@@ -24,7 +24,7 @@ const FORMATS = {
     w: 1080,
     h: 1920,
     accentsPrefix: "accents",
-    bg: "assets/images/bg-base.png",
+    bg: "assets/images/bg-base.webp",
     logoBox: { right: 1043, top: 35, maxW: 340, maxH: 210 },
     title: { x: 230, y: 430, size: 100 },
     date: { x: 40, y: 1560, size: 65, lineHeight: 80 },
@@ -41,7 +41,7 @@ const FORMATS = {
     w: 1080,
     h: 1350,
     accentsPrefix: "accent-series-post",
-    bg: "assets/images/bg-series-post.png",
+    bg: "assets/images/bg-series-post.webp",
     logoBox: { right: 1043, top: 29, maxW: 300, maxH: 185 },
     title: { centerX: 540, y: 1189, size: 244, maxW: 1026 },
     date: { right: 1043, y: 903, size: 56, lineHeight: 62, maxW: 330 },
@@ -62,7 +62,7 @@ const BLOB_PATH =
   "M754.20 732.26 C719.37 801.71 690.04 861.81 655.14 882.96 L653.88 883.70 C555.97 947.73 316.00 577.86 260.23 499.80 C185.41 378.91 7.40 135.40 151.29 15.36 C216.21 -34.19 338.04 -35.32 448.74 -8.65 C597.08 26.37 741.92 110.90 818.33 246.23 C919.09 418.98 833.43 573.52 754.20 732.26 Z";
 const BLOB_BBOX = { x: 96.8, y: -26.0, w: 767.3, h: 917.1 };
 
-const ACCENTS_FILE = `assets/images/${FMT.accentsPrefix}-${DISCIPLINE}.png`;
+const ACCENTS_FILE = `assets/images/${FMT.accentsPrefix}-${DISCIPLINE}.webp`;
 const DOMAIN_TEXT = "worldclimbing.com";
 const TEXT_COLOR = "#03111F";
 // Gleiche Farben wie die Disziplin-Punkte auf der Eventliste (style.css).
@@ -119,6 +119,7 @@ function loadImage(src) {
 }
 
 const assets = {};
+let fontsReady = false; // Text wird erst gezeichnet, wenn die Schriften geladen sind
 let userImg = null;
 let userImgNatural = { w: 0, h: 0 };
 const photoState = { zoom: 1, panX: 0, panY: 0 };
@@ -399,10 +400,11 @@ function render() {
   if (assets.accents) ctx.drawImage(assets.accents, 0, 0, CANVAS_W, CANVAS_H);
 
   drawLogo();
-  drawTexts();
-
   const entries = getEntries();
-  if (entries.length) drawTimetable(entries);
+  if (fontsReady) {
+    drawTexts();
+    if (entries.length) drawTimetable(entries);
+  }
 
   const hasEntries = entries.length > 0;
   stageHint.hidden = hasEntries;
@@ -599,28 +601,29 @@ shareBtn.addEventListener("click", () => {
 });
 
 // ---- Init ----
-async function init() {
-  const [bg, accents, logo] = await Promise.all([
-    loadImage(FMT.bg),
-    loadImage(ACCENTS_FILE),
-    loadImage("assets/images/logo-generic.png"),
-  ]);
-  assets.bg = bg;
-  assets.accents = accents;
-  assets.logo = logo;
-
-  try {
-    const [titleFace, dataFace] = await Promise.all([
-      new FontFace(FONT_FAMILY, `url(assets/fonts/WorldClimbing-Bold.otf)`).load(),
-      new FontFace(DATA_FONT_FAMILY, `url(assets/fonts/AntarcticanMono-Book.ttf)`).load(),
-    ]);
-    document.fonts.add(titleFace);
-    document.fonts.add(dataFace);
-  } catch (e) {
-    console.warn("Font konnte nicht geladen werden, Fallback wird genutzt.", e);
-  }
-
-  render();
+function init() {
+  // Alle Bilder starten gleichzeitig; jedes wird gezeichnet, sobald es da ist
+  // (Progressive Anzeige statt "alles oder nichts").
+  const load = (key, src) =>
+    loadImage(src).then((img) => {
+      assets[key] = img;
+      render();
+    });
+  load("bg", FMT.bg);
+  load("accents", ACCENTS_FILE);
+  load("logo", "assets/images/logo-generic.webp");
+  // Schriften sofort parallel zu den Bildern laden (nicht erst danach), und
+  // Text erst zeichnen, wenn sie da sind - sonst blitzt kurz die Ersatzschrift.
+  Promise.all([
+    new FontFace(FONT_FAMILY, `url(assets/fonts/WorldClimbing-Bold.otf)`).load(),
+    new FontFace(DATA_FONT_FAMILY, `url(assets/fonts/AntarcticanMono-Book.ttf)`).load(),
+  ])
+    .then((faces) => faces.forEach((f) => document.fonts.add(f)))
+    .catch((e) => console.warn("Font konnte nicht geladen werden, Fallback wird genutzt.", e))
+    .finally(() => {
+      fontsReady = true;
+      render();
+    });
 }
 
 if (isInAppBrowser()) {

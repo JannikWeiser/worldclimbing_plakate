@@ -10,7 +10,7 @@ const CURRENT_EVENT =
 // ---- Feste Inhalte (hier später einfach anpassen) ----
 const TITLE_TEXT = CURRENT_EVENT ? CURRENT_EVENT.cityTitle : "WORLD CLIMBING";
 const DATE_LINES = CURRENT_EVENT ? CURRENT_EVENT.dateLines : ["", ""];
-const ACCENTS_FILE = `assets/images/accents-${CURRENT_EVENT ? CURRENT_EVENT.discipline : "lead"}.png`;
+const ACCENTS_FILE = `assets/images/accents-${CURRENT_EVENT ? CURRENT_EVENT.discipline : "lead"}.webp`;
 const DOMAIN_TEXT = "worldclimbing.com";
 const TEXT_COLOR = "#03111F";
 
@@ -73,6 +73,7 @@ function loadImage(src) {
 }
 
 const assets = {};
+let fontsReady = false; // Text wird erst gezeichnet, wenn die Schriften geladen sind
 let userImg = null;
 let userImgNatural = { w: 0, h: 0 };
 
@@ -170,7 +171,7 @@ function render() {
   if (assets.accents) ctx.drawImage(assets.accents, 0, 0, CANVAS_W, CANVAS_H);
 
   drawLogo();
-  drawTexts();
+  if (fontsReady) drawTexts();
 }
 
 // ---- Interaktion: Ziehen zum Verschieben ----
@@ -354,32 +355,31 @@ shareBtn.addEventListener("click", () => {
 });
 
 // ---- Init ----
-async function init() {
-  const [bg, mask, chalk, accents, logo] = await Promise.all([
-    loadImage("assets/images/bg-base.png"),
-    loadImage("assets/images/photo-mask.png"),
-    loadImage("assets/images/chalk-texture.png"),
-    loadImage(ACCENTS_FILE),
-    loadImage("assets/images/logo-generic.png"),
-  ]);
-  assets.bg = bg;
-  assets.mask = mask;
-  assets.chalk = chalk;
-  assets.accents = accents;
-  assets.logo = logo;
-
-  try {
-    const [titleFace, dateFace] = await Promise.all([
-      new FontFace(FONT_FAMILY, `url(assets/fonts/WorldClimbing-Bold.otf)`).load(),
-      new FontFace(DATE_FONT_FAMILY, `url(assets/fonts/AntarcticanMono-Book.ttf)`).load(),
-    ]);
-    document.fonts.add(titleFace);
-    document.fonts.add(dateFace);
-  } catch (e) {
-    console.warn("Font konnte nicht geladen werden, Fallback wird genutzt.", e);
-  }
-
-  render();
+function init() {
+  // Alle Bilder starten gleichzeitig; jedes wird gezeichnet, sobald es da ist
+  // (Progressive Anzeige statt "alles oder nichts").
+  const load = (key, src) =>
+    loadImage(src).then((img) => {
+      assets[key] = img;
+      render();
+    });
+  load("bg", "assets/images/bg-base.webp");
+  load("mask", "assets/images/photo-mask.webp");
+  load("chalk", "assets/images/chalk-texture.webp");
+  load("accents", ACCENTS_FILE);
+  load("logo", "assets/images/logo-generic.webp");
+  // Schriften sofort parallel zu den Bildern laden (nicht erst danach), und
+  // Text erst zeichnen, wenn sie da sind - sonst blitzt kurz die Ersatzschrift.
+  Promise.all([
+    new FontFace(FONT_FAMILY, `url(assets/fonts/WorldClimbing-Bold.otf)`).load(),
+    new FontFace(DATE_FONT_FAMILY, `url(assets/fonts/AntarcticanMono-Book.ttf)`).load(),
+  ])
+    .then((faces) => faces.forEach((f) => document.fonts.add(f)))
+    .catch((e) => console.warn("Font konnte nicht geladen werden, Fallback wird genutzt.", e))
+    .finally(() => {
+      fontsReady = true;
+      render();
+    });
 }
 
 if (isInAppBrowser()) {
